@@ -8,6 +8,15 @@
     },
     "nodes": [
       {
+        "id": "99",
+        "type": "Processing script",
+        "label": "PS1",
+        "metadata": {
+          "depth" : "-1",
+          "description": "End of day PL report extracting to csv and table"
+        }
+      },
+      {
         "id": "0",
         "type": "Batch of extractions",
         "label": "BoE1",
@@ -159,6 +168,11 @@
         "source": "2",
         "relation": "ReadsFrom",
         "target": "8"
+      },
+      {
+        "source": "99",
+        "relation": "Executes",
+        "target": "0"
       }
 
     ]
