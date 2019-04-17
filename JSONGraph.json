@@ -12,6 +12,7 @@
         "type": "Batch of extractions",
         "label": "BoE1",
         "metadata": {
+          "depth" : "0",
           "description": "End of day PL report extracting to csv and table",
           "mandatory-for-eod": true,
           "label-of-data": "PL_EOD"
@@ -22,6 +23,7 @@
         "type": "Extraction",
         "label": "E1",
         "metadata": {
+          "depth" : "1",
           "description": "extracting PL from reporting .."
         }
       },
@@ -30,24 +32,32 @@
         "type": "Extraction",
         "label": "E2",
         "metadata": {
+          "depth" : "1",
           "description": "Extracting PL imported from CCP"
         }
       },
       {
         "id": "3",
         "type": "Datamart table",
-        "label": "T1_REP"
+        "label": "T1_REP",
+        "metadata": {
+          "depth" : "2"
+        }
       },
       {
         "id": "4",
         "type": "Datamart table",
-        "label": "T2_REP"
+        "label": "T2_REP",
+        "metadata": {
+          "depth" : "2"
+        }
       },
       {
         "id": "5",
         "type": "Dynamic table",
         "label": "DYN1",
         "metadata": {
+          "depth": "3",
           "description": "Extracting PL",
           "murex": false,
           "additional": false
@@ -56,22 +66,34 @@
       {
         "id": "6",
         "type": "Datamart table",
-        "label": "T3_REP"
+        "label": "T3_REP",
+        "metadata": {
+          "depth" : "3"
+        }
       },
       {
         "id": "7",
         "type": "DBF table",
-        "label": "T1_DBF"
+        "label": "T1_DBF",
+        "metadata": {
+          "depth" : "4"
+        }
       },
       {
         "id": "8",
         "type": "DBF table",
-        "label": "T2_DBF"
+        "label": "T2_DBF",
+        "metadata": {
+          "depth" : "2"
+        }
       },
       {
         "id": "9",
         "type": "Label of data",
-        "label": "PL_EOD"
+        "label": "PL_EOD",
+        "metadata": {
+          "depth" : "0"
+        }
       }
 
     ],

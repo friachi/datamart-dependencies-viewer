@@ -47,9 +47,12 @@ var legend = {
         .attr('fill', '#999')
         .style('stroke','none');
 
+
+    var collisionForce = d3.forceCollide(50).strength(1).iterations(100);
     var simulation = d3.forceSimulation()
         .force("link", d3.forceLink().id(function (d) {return d.id;}).distance(100).strength(1))
         .force("charge", d3.forceManyBody())
+        .force("collisionForce",collisionForce)
         .force("center", d3.forceCenter(width / 2, height / 2));
 
     d3.json("JSONGraph.json", function (error, graphfile) {
@@ -141,7 +144,7 @@ var legend = {
 
         //tooltip?
         node.append("title")
-            .text(function (d) {return d.id;});
+            .text(function (d) {return d.metadata.depth});
 
         node.append("text")
             .attr("dy", -3)
