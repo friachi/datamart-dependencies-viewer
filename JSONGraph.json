@@ -1,0 +1,144 @@
+{
+  "graphs": [{
+    "directed": true,
+    "type": "Operational",
+    "label": "Table, extraction and label of data dependencies for BoE1",
+    "metadata": {
+      "query": "BoE1"
+    },
+    "nodes": [
+      {
+        "id": "0",
+        "type": "Batch of extractions",
+        "label": "BoE1",
+        "metadata": {
+          "description": "End of day PL report extracting to csv and table",
+          "mandatory-for-eod": true,
+          "label-of-data": "PL_EOD"
+        }
+      },
+      {
+        "id": "1",
+        "type": "Extraction",
+        "label": "E1",
+        "metadata": {
+          "description": "extracting PL from reporting .."
+        }
+      },
+      {
+        "id": "2",
+        "type": "Extraction",
+        "label": "E2",
+        "metadata": {
+          "description": "Extracting PL imported from CCP"
+        }
+      },
+      {
+        "id": "3",
+        "type": "Datamart table",
+        "label": "T1_REP"
+      },
+      {
+        "id": "4",
+        "type": "Datamart table",
+        "label": "T2_REP"
+      },
+      {
+        "id": "5",
+        "type": "Dynamic table",
+        "label": "DYN1",
+        "metadata": {
+          "description": "Extracting PL",
+          "murex": false,
+          "additional": false
+        }
+      },
+      {
+        "id": "6",
+        "type": "Datamart table",
+        "label": "T3_REP"
+      },
+      {
+        "id": "7",
+        "type": "DBF table",
+        "label": "T1_DBF"
+      },
+      {
+        "id": "8",
+        "type": "DBF table",
+        "label": "T2_DBF"
+      },
+      {
+        "id": "9",
+        "type": "Label of data",
+        "label": "PL_EOD"
+      }
+
+    ],
+    "edges": [{
+      "source": "0",
+      "relation": "Executes",
+      "target": "1",
+      "metadata": {
+        "output": {
+          "type": "File",
+          "label": "pl.csv",
+          "path": "./datamart_ext/"
+        }
+      }
+    },
+      {
+        "source": "0",
+        "relation": "Executes",
+        "target": "2",
+        "metadata": {
+          "output": {
+            "type": "Table",
+            "label": "MY_TABLE_DBF"
+          }
+        }
+      },
+      {
+        "source": "0",
+        "relation": "UsesTagData",
+        "target": "9"
+      },
+      {
+        "source": "1",
+        "relation": "WritesIn",
+        "target": "3"
+      },
+      {
+        "source": "1",
+        "relation": "ReadsFrom",
+        "target": "3"
+      },
+      {
+        "source": "1",
+        "relation": "ReadsFrom",
+        "target": "4"
+      },
+      {
+        "source": "3",
+        "relation": "BasedOn",
+        "target": "5"
+      },
+      {
+        "source": "4",
+        "relation": "ReadsFrom",
+        "target": "6"
+      },
+      {
+        "source": "6",
+        "relation": "ReadsFrom",
+        "target": "7"
+      },
+      {
+        "source": "2",
+        "relation": "ReadsFrom",
+        "target": "8"
+      }
+
+    ]
+  }]
+}
