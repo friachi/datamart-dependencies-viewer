@@ -7,6 +7,19 @@
     <style type="text/css">
         .node {}
         .edgepath { fill: none; stroke: #999; stroke-opacity: .6; stroke-width: 1px; }
+        div.tooltip {
+            position: absolute;
+            text-align: left;
+            width: auto;
+            word-wrap: break-word;
+            padding: 2px;
+            font: 12px sans-serif;
+            background: lightsteelblue;
+            border: 0px;
+            border-radius: 4px;
+            pointer-events: none;
+
+        }
 
     </style>
 </head>
@@ -26,6 +39,17 @@ var legend = {
            "Label of data" : { color: "#57A800" },
            "Dynamic table" : { color: "#8CC6ED" }
 };
+
+    // Define the div for the tooltip
+    var divNodeTooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+    // Define the div for the tooltip
+    var divEdgeTooltip= d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
 
     var svg = d3.select("svg"),
         width = +svg.attr("width"),
@@ -62,39 +86,44 @@ var legend = {
 
     function update(links, nodes) {
 
-    //sort links by source, then target
-      links.sort(function(a, b) {
-        if (a.source > b.source) {
-          return 1;
-        }
-        else if (a.source < b.source) {
-          return -1;
-        }
-        else {
-          if (a.target > b.target) {
-            return 1;
-          }
-          if (a.target < b.target) {
-            return -1;
-          }
-          else {
-            return 0;
-          }
-        }
-      });
+    //////////////////////////////
+    /////////// Links ////////////
+    //////////////////////////////
 
-      //any links with duplicate source and target get an incremented 'linknum'
-      for (var i = 0; i < links.length; i++) {
-        if (i != 0 &&
-          links[i].source == links[i - 1].source &&
-          links[i].target == links[i - 1].target) {
-          links[i].linknum = links[i - 1].linknum + 1;
-        }
-        else {
-          links[i].linknum = 0;
+        //sort links by source, then target
+          links.sort(function(a, b) {
+            if (a.source > b.source) {
+              return 1;
+            }
+            else if (a.source < b.source) {
+              return -1;
+            }
+            else {
+              if (a.target > b.target) {
+                return 1;
+              }
+              if (a.target < b.target) {
+                return -1;
+              }
+              else {
+                return 0;
+              }
+            }
+          });
+
+        //any links with duplicate source and target get an incremented 'linknum'
+        for (var i = 0; i < links.length; i++) {
+            if (i != 0 &&
+              links[i].source == links[i - 1].source &&
+              links[i].target == links[i - 1].target) {
+              links[i].linknum = links[i - 1].linknum + 1;
+            }
+            else {
+              links[i].linknum = 0;
+            };
         };
-      };
 
+        //start adding the directed arrows
         link = svg.selectAll(".edgepath")
             .data(links)
             .enter()
@@ -108,55 +137,96 @@ var legend = {
             .style("pointer-events", "none")
             .attr('marker-end','url(#arrowhead)');
 
+
+        //add labels and events to arrows
         edgelabels = svg.selectAll(".edgelabel")
             .data(links)
             .enter()
             .append('text')
-            .style("pointer-events", "none")
+            //.style("pointer-events", "none")
             .attrs({
                 'class': 'edgelabel',
                 'id': function (d, i) {return 'edgelabel' + i},
-                'font-size': 20,
+                'font-size': 15,
                 'fill': '#aaa'
+            })
+            .on("mouseover", function(d) {
+                    d3.select(this).style("fill", "lightsteelblue").attr('fill-opacity', 1);
+                    if(d.hasOwnProperty("metadata")){
+                        divEdgeTooltip.transition().delay(300).duration(200).style("opacity", .9);
+                        divEdgeTooltip.html("<pre>" + JSON.stringify(d.metadata, null, 1) + "</pre>")
+                            .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px");
+                    }
+             })
+            .on("mouseout", function(d) {
+                    d3.select(this).style("fill", "#999").attr('fill-opacity', 0.6);
+                    divEdgeTooltip.transition()
+                    .duration(200)
+                    .style("opacity", 0);
             });
-            edgelabels.append('textPath')
+
+         edgelabels.append('textPath')
                 .attr('xlink:href', function (d, i) {return '#edgepath' + i})
                 .style("text-anchor", "middle")
-                .style("pointer-events", "none")
+                //.style("pointer-events", "none")
                 .attr("startOffset", "50%")
-                .text(function (d) {return d.relation});
+                .text(function (d) {return d.relation})
+                .attr('pointer-events', 'visibleStroke');
 
-        node = svg.selectAll(".node")
-            .data(nodes)
-            .enter()
-            .append("g")
-            .attr("class", "node")
-            .on('dblclick', releasenode)
-            .call(d3.drag()
-                    .on("start", dragstarted)
-                    .on("drag", dragged)
-                    .on("end", dragended)
-            );
 
-        node.append("circle")
+    //////////////////////////////
+    /////////// Nodes ////////////
+    //////////////////////////////
+    //Add nodes and events on them
+    node = svg.selectAll(".node")
+        .data(nodes)
+        .enter()
+        .append("g")
+        .attr("class", "node")
+        .on('dblclick', releasenode)
+        .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended)
+        )
+        .on("mouseover", function(d) {
+            if(d.hasOwnProperty("metadata")){
+                        divNodeTooltip.transition().delay(300).duration(200).style("opacity", .9);
+                        divNodeTooltip.html("<pre>" + JSON.stringify(d.metadata, null, 1) + "</pre>")
+                            .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px");
+                    }
+        })
+        .on("mouseout", function(d) {
+            divNodeTooltip.transition()
+            .duration(200)
+            .style("opacity", 0);
+        });
+
+    node.append("circle")
             .attr("r", 10)
             .attr("fill", function(d) { return legend[d.type].color; })
 
-        //tooltip?
-        node.append("title")
-            .text(function (d) {return d.metadata.depth});
+    /*tooltip?
+    node.append("title")
+        .text(function (d) {return d.metadata.depth});
+    */
 
-        node.append("text")
-            .attr("dy", -3)
-            .text(function (d) {return d.label;});
+    node.append("text")
+        .attr("dy", -3)
+        .text(function (d) {return d.label;});
 
-        simulation
-            .nodes(nodes)
-            .on("tick", ticked);
+    simulation
+        .nodes(nodes)
+        .on("tick", ticked);
 
-        simulation.force("link")
-            .links(links);
+    simulation.force("link")
+        .links(links);
     }
+
+
+    //////////////////////////////////////////
+    /////////// Simulation update ////////////
+    //////////////////////////////////////////
 
     function ticked() {
 
@@ -191,6 +261,7 @@ var legend = {
 
     }
 
+//Utility functions
 function dragstarted(d) {
     if (!d3.event.active) simulation.alphaTarget(0.3).restart();
     d.fx = d.x;
@@ -211,6 +282,19 @@ function dragended(d) {
 function releasenode(d) {
     d.fx = null;
     d.fy = null;
+}
+
+function checkNested(obj) {
+ //usage: checkNested(jsonObje, "level1","level2","levelN") return true if found
+  var args = Array.prototype.slice.call(arguments, 1);
+
+  for (var i = 0; i < args.length; i++) {
+    if (!obj || !obj.hasOwnProperty(args[i])) {
+      return false;
+    }
+    obj = obj[args[i]];
+  }
+  return true;
 }
 
 
