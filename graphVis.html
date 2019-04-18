@@ -47,6 +47,10 @@
 
 <script type="text/javascript">
 
+//////////////////////////////
+////// Global variables //////
+//////////////////////////////
+
 var chartDiv = document.getElementById("chart");
 
 var legend = {
@@ -56,7 +60,9 @@ var legend = {
           "Datamart table" : { color: "#84D663" },
                "DBF table" : { color: "#B3B02D" },
            "Label of data" : { color: "#57A800" },
-           "Dynamic table" : { color: "#8CC6ED" }
+           "Dynamic table" : { color: "#8CC6ED" },
+           "Non-managed table" : { color: "#000000" }
+
 };
 
     // Define the div for the tooltip
@@ -95,15 +101,9 @@ var legend = {
         .attr('fill', '#999')
         .style('stroke','none');
 
-
-    var collisionForce = d3.forceCollide(50).strength(1).iterations(100);
-    var simulation = d3.forceSimulation();
-
-    simulation.force("link", d3.forceLink().id(function (d) {return d.id;}).distance(50).strength(1))
-        .force("charge", d3.forceManyBody())
-        .force("collisionForce",collisionForce)
-        .force("center", d3.forceCenter(width / 2, height / 2));
-
+//////////////////////////////
+////// Load Data File ////////
+//////////////////////////////
 
 
     d3.json("JSONGraph.json", function (error, graphfile) {
@@ -117,93 +117,94 @@ var legend = {
     /////////// Links ////////////
     //////////////////////////////
 
-        //sort links by source, then target
-          links.sort(function(a, b) {
-            if (a.source > b.source) {
-              return 1;
-            }
-            else if (a.source < b.source) {
-              return -1;
-            }
-            else {
-              if (a.target > b.target) {
-                return 1;
-              }
-              if (a.target < b.target) {
-                return -1;
-              }
-              else {
-                return 0;
-              }
-            }
-          });
+    //sort links by source, then target
+      links.sort(function(a, b) {
+        if (a.source > b.source) {
+          return 1;
+        }
+        else if (a.source < b.source) {
+          return -1;
+        }
+        else {
+          if (a.target > b.target) {
+            return 1;
+          }
+          if (a.target < b.target) {
+            return -1;
+          }
+          else {
+            return 0;
+          }
+        }
+      });
 
-        //any links with duplicate source and target get an incremented 'linknum'
-        for (var i = 0; i < links.length; i++) {
-            if (i != 0 &&
-              links[i].source == links[i - 1].source &&
-              links[i].target == links[i - 1].target) {
-              links[i].linknum = links[i - 1].linknum + 1;
-            }
-            else {
-              links[i].linknum = 0;
-            };
+    //any links with duplicate source and target get an incremented 'linknum'
+    for (var i = 0; i < links.length; i++) {
+        if (i != 0 &&
+          links[i].source == links[i - 1].source &&
+          links[i].target == links[i - 1].target) {
+          links[i].linknum = links[i - 1].linknum + 1;
+        }
+        else {
+          links[i].linknum = 0;
         };
+    };
 
-        //start adding the directed arrows
-        link = svg.selectAll(".edgepath")
-            .data(links)
-            .enter()
-            .append("svg:path")
-            .attrs({
-                'class': 'edgepath',
-                'fill-opacity': 0,
-                'stroke-opacity': 0,
-                'id': function (d, i) {return 'edgepath' + i}
-            })
-            .style("pointer-events", "none")
-            .attr('marker-end','url(#arrowhead)');
+    //start adding the directed arrows
+    link = svg.selectAll(".edgepath")
+        .data(links)
+        .enter()
+        .append("svg:path")
+        .attrs({
+            'class': 'edgepath',
+            'fill-opacity': 0,
+            'stroke-opacity': 0,
+            'id': function (d, i) {return 'edgepath' + i}
+        })
+        .style("pointer-events", "none")
+        .attr('marker-end','url(#arrowhead)');
 
 
-        //add labels and events to arrows
-        edgelabels = svg.selectAll(".edgelabel")
-            .data(links)
-            .enter()
-            .append('text')
+    //add labels and events to arrows
+    edgelabels = svg.selectAll(".edgelabel")
+        .data(links)
+        .enter()
+        .append('text')
+        //.style("pointer-events", "none")
+        .attrs({
+            'class': 'edgelabel',
+            'id': function (d, i) {return 'edgelabel' + i},
+            'font-size': 15,
+            'fill': '#aaa'
+        })
+        .on("mouseover", function(d) {
+                d3.select(this).style("fill", "lightsteelblue").attr('fill-opacity', 1);
+                if(d.hasOwnProperty("metadata")){
+                    divEdgeTooltip.transition().delay(300).duration(200).style("opacity", .9);
+                    divEdgeTooltip.html("<pre>" + JSON.stringify(d.metadata, null, 1) + "</pre>")
+                        .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px");
+                }
+         })
+        .on("mouseout", function(d) {
+                d3.select(this).style("fill", "#999").attr('fill-opacity', 0.6);
+                divEdgeTooltip.transition()
+                .duration(200)
+                .style("opacity", 0);
+        });
+
+     edgelabels.append('textPath')
+            .attr('xlink:href', function (d, i) {return '#edgepath' + i})
+            .style("text-anchor", "middle")
             //.style("pointer-events", "none")
-            .attrs({
-                'class': 'edgelabel',
-                'id': function (d, i) {return 'edgelabel' + i},
-                'font-size': 15,
-                'fill': '#aaa'
-            })
-            .on("mouseover", function(d) {
-                    d3.select(this).style("fill", "lightsteelblue").attr('fill-opacity', 1);
-                    if(d.hasOwnProperty("metadata")){
-                        divEdgeTooltip.transition().delay(300).duration(200).style("opacity", .9);
-                        divEdgeTooltip.html("<pre>" + JSON.stringify(d.metadata, null, 1) + "</pre>")
-                            .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px");
-                    }
-             })
-            .on("mouseout", function(d) {
-                    d3.select(this).style("fill", "#999").attr('fill-opacity', 0.6);
-                    divEdgeTooltip.transition()
-                    .duration(200)
-                    .style("opacity", 0);
-            });
-
-         edgelabels.append('textPath')
-                .attr('xlink:href', function (d, i) {return '#edgepath' + i})
-                .style("text-anchor", "middle")
-                //.style("pointer-events", "none")
-                .attr("startOffset", "50%")
-                .text(function (d) {return d.relation})
-                .attr('pointer-events', 'visibleStroke');
+            .attr("startOffset", "50%")
+            .text(function (d) {return d.relation})
+            .attr('pointer-events', 'visibleStroke');
 
 
     //////////////////////////////
     /////////// Nodes ////////////
     //////////////////////////////
+
     //Add nodes and events on them
     node = svg.selectAll(".node")
         .data(nodes)
@@ -242,21 +243,77 @@ var legend = {
         .attr("dy", -3)
         .text(function (d) {return d.label;});
 
+    ////////////////////////////////
+    ////////// Simulation //////////
+    ////////////////////////////////
+
+
+    var simulation = d3.forceSimulation();
+
+    simulation.force("link", d3.forceLink().id(function(d) { return d.id; }).distance(50))
+        .force("charge", d3.forceManyBody())
+        .force("collisionForce",d3.forceCollide(50).strength(1).iterations(100))
+        .force("center", d3.forceCenter(width / 2, height / 2));
+
 
     simulation
         .nodes(nodes)
         .on("tick", ticked);
 
-    simulation.force("link")
-        .links(links);
+    simulation.force("link").links(links);
+
+
+    /////////////////////////////////
+    ////////// Utility fns //////////
+    /////////////////////////////////
+
+
+
+    function dragstarted(d) {
+        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+
     }
 
+    function dragged(d) {
 
-    //////////////////////////////////////////
-    /////////// Simulation update ////////////
-    //////////////////////////////////////////
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+
+    }
+
+    function dragended(d) {
+        if (!d3.event.active) simulation.alphaTarget(0.1);
+        simulation.stop(); //STOP sim after first drag temp solution to understand why when I drag many nodes, other nodes will fly off the screen!
+        // Allows NODE FIXING
+        //d.fx = null;
+        //d.fy = null;
+    }
+    function releasenode(d) {
+
+        d.fx = null;
+        d.fy = null;
+    }
+
+    function checkNested(obj) {
+     // to check if a json contains a given path property
+     //usage: checkNested(jsonObje, "level1","level2","levelN") return true if found
+      var args = Array.prototype.slice.call(arguments, 1);
+
+      for (var i = 0; i < args.length; i++) {
+        if (!obj || !obj.hasOwnProperty(args[i])) {
+          return false;
+        }
+        obj = obj[args[i]];
+      }
+      return true;
+    }
+
+    }
 
     function ticked() {
+
 
         //update nodes position with each simulation tick
         node.attr("transform", function (d) {return "translate(" + d.x + ", " + d.y + ")";});
@@ -273,6 +330,12 @@ var legend = {
             return "M"+d.source.x+" "+d.source.y+" C" + d.source.x + " " + d.source.y + " " + qx1 + " " + qy1 + " " + d.target.x + " " + d.target.y;
         });
 
+        link
+        .attr("x1", function(d) { return d.source.x + 5; })
+        .attr("y1", function(d) { return d.source.y + 5; })
+        .attr("x2", function(d) { return d.target.x + 5; })
+        .attr("y2", function(d) { return d.target.y + 5; });
+
         //correct/rotate direction of text as a function of nodes' position
         edgelabels.attr('transform', function (d) {
             if (d.target.x < d.source.x) {
@@ -288,47 +351,6 @@ var legend = {
         });
 
     }
-
-//Utility functions
-function dragstarted(d) {
-    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-    d.fx = d.x;
-    d.fy = d.y;
-}
-
-function dragged(d) {
-    d.fx = d3.event.x;
-    d.fy = d3.event.y;
-}
-
-function dragended(d) {
-    if (!d3.event.active) simulation.alphaTarget(0);
-    simulation.stop(); //STOP sim after first drag temp solution to understand why when I drag many nodes, other nodes will fly off the screen!
-    // Allows NODE FIXING
-    // d.fx = null;
-    // d.fy = null;
-}
-function releasenode(d) {
-simulation.stop();
-    d.fx = null;
-    d.fy = null;
-}
-
-function checkNested(obj) {
- // to check if a json contains a given path property
- //usage: checkNested(jsonObje, "level1","level2","levelN") return true if found
-  var args = Array.prototype.slice.call(arguments, 1);
-
-  for (var i = 0; i < args.length; i++) {
-    if (!obj || !obj.hasOwnProperty(args[i])) {
-      return false;
-    }
-    obj = obj[args[i]];
-  }
-  return true;
-}
-
-
 </script>
 
 </body>
