@@ -2,12 +2,10 @@
 <meta charset="utf-8">
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <style type="text/css">
         .node {
-
+            cursor: pointer;
         }
 
         .edgepath {
@@ -15,6 +13,11 @@
             stroke: #999;
             stroke-opacity: .6;
             stroke-width: 1px;
+
+        }
+
+        .edgelabel {
+
         }
 
         div.tooltip {
@@ -31,6 +34,16 @@
 
         }
 
+        .legend {
+             font: 14px sans-serif;
+             cursor: pointer;
+        }
+
+         #mainbody {
+            background:#fff;
+
+        }
+
         #chart {
             position: fixed;
             left: 0px;
@@ -40,14 +53,31 @@
 
         }
 
-        .legend {
-         font: 14px sans-serif;
+        div.jsonDiv
+        {
+            position: absolute;
+            text-align: left;
+            width: auto;
+            word-wrap: break-word;
+            padding: 2px;
+            font: 12px sans-serif;
+            background: lightsteelblue;
+            border: 0px;
+            border-radius: 4px;
+            overflow-y: scroll;
+            height: 50%;
         }
+
+
 
     </style>
 </head>
 <body>
-<div id="chart"></div>
+<div id="container">
+    <div class="header"></div>
+    <div class="mainbody" id="chart"></div>
+
+</div>
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script>
 
@@ -56,6 +86,8 @@
 //////////////////////////////
 
     var chartDiv = document.getElementById("chart");
+    var jsonResponse = "JSONGraph.json" //Reading from file
+    var jsonData;
 
     ////////// tooltips  //////////
 
@@ -67,6 +99,11 @@
     // Define the div for the tooltip
     var divEdgeTooltip= d3.select("body").append("div")
     .attr("class", "tooltip")
+    .style("opacity", 0);
+
+    // Define the div for the json
+    var divJsonTooltip= d3.select("body").append("div")
+    .attr("class", "jsonDiv")
     .style("opacity", 0);
 
 
@@ -94,6 +131,25 @@
            "Non-managed table" : { color: "#C0C0C0",depthY: height*(1/8),dimmed: false}
 
     };
+
+    //buttons
+    d3.select("#chart")
+    .append("button")
+    .attr("id","jsonButton")
+    .style("position","absolute")
+    .style("top","10px")
+    .style("left","80%")
+    .text("JSON graph response")
+    .on("click", function(){
+        if(divJsonTooltip.style("opacity") == 0)
+        {
+            divJsonTooltip.html("<pre>" + JSON.stringify(jsonData, null, 1) + "</pre>")
+                            .style("left", "70%").style("top", 50 + "px").style("opacity", 1);
+        }
+        else
+            divJsonTooltip.html("").style("opacity", 0);
+    });
+
 
    ////////// arrow markers  //////////
    svg.append('defs')
@@ -131,8 +187,12 @@
 ////////// Load Data  //////////
 ////////////////////////////////
 
-d3.json("JSONGraph.json", function (error, graphfile) {
+d3.json(jsonResponse, function (error, graphfile) {
         if (error) throw error;
+
+        //before pushing to simulation, make copy of the JSON Graph so it can be shown to user as json without the D3 simulation params added later on.
+        jsonData = JSON.parse(JSON.stringify(graphfile));
+
         update(graphfile.graphs[0].edges, graphfile.graphs[0].nodes);
     });
 
@@ -274,7 +334,7 @@ function update(links, nodes) {
             .attr("font-size","15")
             .attr("fill","#aaa")
         .on("mouseover", function(d) {
-                d3.select(this).style("fill", "lightsteelblue").attr('fill-opacity', 1);
+                d3.select(this).style("fill", "red").attr('fill-opacity', 1);
                 if(d.hasOwnProperty("metadata")){
                     divEdgeTooltip.transition().delay(300).duration(200).style("opacity", .9);
                     divEdgeTooltip.html("<pre>" + JSON.stringify(d.metadata, null, 1) + "</pre>")
@@ -407,7 +467,7 @@ function toggleNodeVisibility(nodeType){
 }
 
 function toggleOtherNodesVisibility(nodeType){
-        ;
+
         var foundNodes = d3.selectAll(".node").filter(function(d){return d.type === nodeType ;});
         var otherNodes = d3.selectAll(".node").filter(function(d){return d.type != nodeType ;});
 

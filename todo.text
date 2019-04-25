@@ -1,7 +1,7 @@
 - DONE: make graph using old force layout (d3v3) instead of SimulationForce (d3v4)
 - DONE: add legend with node count
-- make legend click-able (on click dim/show)
-- add hirerarchy checkbox to force nodes into position (available only if nodes have metadata.depth)
+- DONE: make legend click-able (on click dim/show)
+- DONE: add button to show source JSON Graph
 - add URL to get json from REST or file
 - read graph metadata and show on screen
-- add split screen to show graph instead of vis
+- add hirerarchy checkbox to force nodes into position (available only if nodes have metadata.depth)
