@@ -185,6 +185,11 @@ function update(links, nodes) {
                     var selectedLegend = d;
                     toggleNodeVisibility(selectedLegend);
             })
+            .on("dblclick",function(d){
+                    var selectedLegend = d;
+                    toggleOtherNodesVisibility(d);
+            })
+
 
         legendArea.selectAll("text")
             .data(d3.keys(legend))
@@ -197,6 +202,10 @@ function update(links, nodes) {
             .on("click",function(d){
                     var selectedLegend = d;
                     toggleNodeVisibility(selectedLegend);
+            })
+            .on("dblclick",function(d){
+                    var selectedLegend = d;
+                     toggleOtherNodesVisibility(d);
             })
 
     //////////////////////////////
@@ -355,30 +364,31 @@ function update(links, nodes) {
 /////////////////////////////////
 
 function dblclick(d) {
-  d3.select(this).classed("fixed", d.fixed = false);
+        d3.select(this).classed("fixed", d.fixed = false);
 }
 
 function dragstart(d) {
-  d3.select(this).classed("fixed", d.fixed = true);
+        d3.select(this).classed("fixed", d.fixed = true);
 }
 
 
 function checkNested(obj) {
- // to check if a json contains a given path property
- //usage: checkNested(jsonObje, "level1","level2","levelN") return true if found
-  var args = Array.prototype.slice.call(arguments, 1);
+         // to check if a json contains a given path property
+         //usage: checkNested(jsonObje, "level1","level2","levelN") return true if found
+          var args = Array.prototype.slice.call(arguments, 1);
 
-  for (var i = 0; i < args.length; i++) {
-    if (!obj || !obj.hasOwnProperty(args[i])) {
-      return false;
-    }
-    obj = obj[args[i]];
-  }
-  return true;
+          for (var i = 0; i < args.length; i++) {
+            if (!obj || !obj.hasOwnProperty(args[i])) {
+              return false;
+            }
+            obj = obj[args[i]];
+          }
+          return true;
 }
 
 
 function toggleNodeVisibility(nodeType){
+
         var foundNodes = d3.selectAll(".node").filter(function(d){return d.type === nodeType ;});
 
         if(legend[nodeType].dimmed) {
@@ -394,6 +404,33 @@ function toggleNodeVisibility(nodeType){
             foundNodes.transition().duration(500).style("opacity",0.2);
             legend[nodeType].dimmed = true;
         }
+}
+
+function toggleOtherNodesVisibility(nodeType){
+        ;
+        var foundNodes = d3.selectAll(".node").filter(function(d){return d.type === nodeType ;});
+        var otherNodes = d3.selectAll(".node").filter(function(d){return d.type != nodeType ;});
+
+        //make dbl clicked legend visible
+        d3.select("rect[id='legend-rect-"+nodeType+"']").transition().duration(500).style("opacity",1);
+        d3.select("text[id='legend-text-"+nodeType+"']").transition().duration(500).style("opacity",1);
+        legend[nodeType].dimmed = false;
+
+        //make nodes of selected type visible
+        foundNodes.transition().duration(500).style("opacity",1);
+
+        //dim all other legends
+        for (const key of Object.keys(legend)) {
+            if(key != nodeType) {
+                d3.select("rect[id='legend-rect-"+key+"']").transition().duration(500).style("opacity",0.2);
+                d3.select("text[id='legend-text-"+key+"']").transition().duration(500).style("opacity",0.2);
+                legend[nodeType].dimmed = true;
+             }
+        }
+
+        //dim all other nodes
+        otherNodes.transition().duration(500).style("opacity",0.21);
+
 }
 
 function tick() {
