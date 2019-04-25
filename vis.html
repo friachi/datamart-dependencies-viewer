@@ -37,6 +37,7 @@
             right: 0px;
             top: 0px;
             bottom: 0px;
+
         }
 
         .legend {
@@ -80,6 +81,19 @@
         svg
           .attr("width", width)
           .attr("height", height);
+
+    ////////// legend  //////////
+    var legend = {
+           "Processing script" : { color: "#DF6349",depthY: height*(8/8),dimmed: false},
+        "Batch of extractions" : { color: "#F8B624",depthY: height*(7/8),dimmed: false},
+                  "Extraction" : { color: "#D88A8A",depthY: height*(6/8),dimmed: false},
+              "Datamart table" : { color: "#84D663",depthY: height*(5/8),dimmed: false},
+                   "DBF table" : { color: "#B3B02D",depthY: height*(4/8),dimmed: false},
+               "Label of data" : { color: "#57A800",depthY: height*(3/8),dimmed: false},
+               "Dynamic table" : { color: "#8CC6ED",depthY: height*(2/8),dimmed: false},
+           "Non-managed table" : { color: "#C0C0C0",depthY: height*(1/8),dimmed: false}
+
+    };
 
    ////////// arrow markers  //////////
    svg.append('defs')
@@ -127,18 +141,7 @@ d3.json("JSONGraph.json", function (error, graphfile) {
 //main draw function (called when loading json data)
 function update(links, nodes) {
 
-    ////////// legend  //////////
-    var legend = {
-           "Processing script" : { color: "#DF6349",depthY: height*(8/8)},
-        "Batch of extractions" : { color: "#F8B624",depthY: height*(7/8)},
-                  "Extraction" : { color: "#D88A8A",depthY: height*(6/8)},
-              "Datamart table" : { color: "#84D663",depthY: height*(5/8)},
-                   "DBF table" : { color: "#B3B02D",depthY: height*(4/8)},
-               "Label of data" : { color: "#57A800",depthY: height*(3/8)},
-               "Dynamic table" : { color: "#8CC6ED",depthY: height*(2/8)},
-           "Non-managed table" : { color: "#C0C0C0",depthY: height*(1/8)}
 
-    };
 
     //// count objects by type ////
     var countPS = 0,
@@ -175,12 +178,12 @@ function update(links, nodes) {
             .attr("y", function(d) { return factor*legend[d].depthY; })
             .attr("rx", "8")
             .attr("ry", "8")
-            .attr("height", 40)
+            .attr("height", 30)
             .attr("width", 180)
             .attr("fill",function(d) { return legend[d].color;})
             .on("click",function(d){
                     var selectedLegend = d;
-                    console.log(selectedLegend);
+                    toggleNodeVisibility(selectedLegend);
             })
 
         legendArea.selectAll("text")
@@ -188,12 +191,12 @@ function update(links, nodes) {
             .enter().append("text")
             .attr("id",function(d){ return 'legend-text-' +d; })
             .attr("x",25)
-            .attr("y", function(d) { return (factor*legend[d].depthY)+25; })
+            .attr("y", function(d) { return (factor*legend[d].depthY)+20; })
             .style("fill", "black")
             .text(function(d) { return d + ' ('+legend[d].nodeCount+')';})
             .on("click",function(d){
                     var selectedLegend = d;
-                    console.log(selectedLegend);
+                    toggleNodeVisibility(selectedLegend);
             })
 
     //////////////////////////////
@@ -344,6 +347,7 @@ function update(links, nodes) {
      force.links(links);
      force.start();
 
+
 }//End Update fn
 
 /////////////////////////////////
@@ -371,6 +375,25 @@ function checkNested(obj) {
     obj = obj[args[i]];
   }
   return true;
+}
+
+
+function toggleNodeVisibility(nodeType){
+        var foundNodes = d3.selectAll(".node").filter(function(d){return d.type === nodeType ;});
+
+        if(legend[nodeType].dimmed) {
+
+            d3.select("rect[id='legend-rect-"+nodeType+"']").transition().duration(500).style("opacity",1);
+            d3.select("text[id='legend-text-"+nodeType+"']").transition().duration(500).style("opacity",1);
+            foundNodes.transition().duration(500).style("opacity",1);
+            legend[nodeType].dimmed = false;
+        }
+        else{
+            d3.select("rect[id='legend-rect-"+nodeType+"']").transition().duration(500).style("opacity",0.2);
+            d3.select("text[id='legend-text-"+nodeType+"']").transition().duration(500).style("opacity",0.2);
+            foundNodes.transition().duration(500).style("opacity",0.2);
+            legend[nodeType].dimmed = true;
+        }
 }
 
 function tick() {
