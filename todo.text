@@ -2,6 +2,7 @@
 - DONE: add legend with node count
 - DONE: make legend click-able (on click dim/show)
 - DONE: add button to show source JSON Graph
+- DONE: fix ctrl click on legend (use case: click ctrl, then normal click, the latter will not directly have impact, it needs to be clicked twice in a row)
 - add URL to get json from REST or file
 - read graph metadata and show on screen
 - add hirerarchy checkbox to force nodes into position (available only if nodes have metadata.depth)

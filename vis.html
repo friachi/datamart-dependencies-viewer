@@ -242,13 +242,11 @@ function update(links, nodes) {
             .attr("width", 180)
             .attr("fill",function(d) { return legend[d].color;})
             .on("click",function(d){
-                    var selectedLegend = d;
-                    toggleNodeVisibility(selectedLegend);
+               toggleNodeVisibility(d);
             })
             .on("dblclick",function(d){
-                    var selectedLegend = d;
-                    toggleOtherNodesVisibility(d);
-            })
+                toggleOtherNodesVisibility(d);
+            });
 
 
         legendArea.selectAll("text")
@@ -260,13 +258,12 @@ function update(links, nodes) {
             .style("fill", "black")
             .text(function(d) { return d + ' ('+legend[d].nodeCount+')';})
             .on("click",function(d){
-                    var selectedLegend = d;
-                    toggleNodeVisibility(selectedLegend);
+               toggleNodeVisibility(d);
             })
             .on("dblclick",function(d){
-                    var selectedLegend = d;
-                     toggleOtherNodesVisibility(d);
-            })
+                toggleOtherNodesVisibility(d);
+            });
+
 
     //////////////////////////////
     /////////// Links ////////////
@@ -464,6 +461,7 @@ function toggleNodeVisibility(nodeType){
             foundNodes.transition().duration(500).style("opacity",0.2);
             legend[nodeType].dimmed = true;
         }
+        console.log(legend);
 }
 
 function toggleOtherNodesVisibility(nodeType){
@@ -484,13 +482,13 @@ function toggleOtherNodesVisibility(nodeType){
             if(key != nodeType) {
                 d3.select("rect[id='legend-rect-"+key+"']").transition().duration(500).style("opacity",0.2);
                 d3.select("text[id='legend-text-"+key+"']").transition().duration(500).style("opacity",0.2);
-                legend[nodeType].dimmed = true;
+                legend[key].dimmed = true;
              }
         }
 
         //dim all other nodes
         otherNodes.transition().duration(500).style("opacity",0.21);
-
+console.log(legend);
 }
 
 function tick() {
