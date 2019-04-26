@@ -76,11 +76,11 @@
 <div id="container">
     <div class="header"></div>
     <div class="mainbody" id="chart"></div>
-    <div style="position:absolute;top:15px;left:20px;font-size:14px;visibility: hidden;" id="hcheckbox" >
-        <input type="checkbox" id="hierarchyBox" title="when checked, nodes will be layered vertically based on their metadata.depth value +ev (top) -ev (bottom) " >Hierarchy mode<br>
-    </div>
     <div style="position:absolute;top:15px;right:25px;font-size:14px;">
         <input type="button" id="jsonButton" value="JSON Graph" title="Show the raw JSON Graph response"/>
+    </div>
+    <div style="position:absolute;top:50px;right:25px;font-size:14px;visibility: hidden;" id="hcheckbox" >
+        <input type="checkbox" id="hierarchyBox" title="nodes with +ev depth are placed towards the top" >Force Data-stream hierarchy<br>
     </div>
 
 </div>
@@ -161,11 +161,13 @@
             if(this.checked)
             {
                 hierarchyMode = true;
+                d3.select("#verticalLine").style("visibility","visible");
 
             }
             else
             {
                 hierarchyMode = false;
+                d3.select("#verticalLine").style("visibility","hidden");
              }
             force.start();  //to restart simulation, thus allowing nodes to reposition
         });
@@ -187,6 +189,50 @@
         .attr('fill', '#999')
         .style('stroke','none');
 
+   svg.append('defs')
+        .append('marker')
+            .attr("id","arrow")
+            .attr("viewBox","-0 -5 10 10")
+            .attr("refX","0")
+            .attr("refY","0")
+            .attr("orient","auto")
+            .attr("markerWidth","13")
+            .attr("markerHeight","13")
+            .attr("xoverflow","visible")
+        .append('svg:path')
+        .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+        .attr('fill', '#999')
+        .style('stroke','none');
+
+    //vertical line for 'hierarchy mode'
+    var verticalLine = svg.append("g")
+                          .attr("id","verticalLine")
+                          .style("visibility","hidden");
+
+    verticalLine.append("line")
+        .style("stroke","grey")
+        .attr("x1",width-50)
+        .attr("x2",width-50)
+        .attr("y1","100")
+        .attr("y2",height-50)
+        .attr('marker-start', 'url(#arrow)')
+        .attr('marker-end', 'url(#arrow)')
+
+    verticalLine.append("text")
+        .attr("dx", width-80)
+        .attr("dy", 90)
+        .text("Upstream")
+        .attr('fill', '#999')
+        .style('stroke','none')
+        .attr("font-size","13");
+
+    verticalLine.append("text")
+        .attr("dx", width-84)
+        .attr("dy", height-20)
+        .text("Downstream")
+        .attr('fill', '#999')
+        .style('stroke','none')
+        .attr("font-size","13");
 
     ////////// Simulation //////////
     var force = d3.layout.force()
@@ -262,6 +308,7 @@ function update(links, nodes) {
     if(nodesWithDepth == nodes.length)
     {
         d3.select("#hcheckbox").style("visibility","visible");
+
 
         //sort depths array in DESC order (as we will use top (positive depth) and bottom (negative depth) when
         //assigning y value for custom simulation forces top to bottom
