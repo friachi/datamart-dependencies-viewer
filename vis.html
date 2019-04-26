@@ -76,6 +76,12 @@
 <div id="container">
     <div class="header"></div>
     <div class="mainbody" id="chart"></div>
+    <div style="position:absolute;top:15px;left:20px;font-size:14px;">
+        <input type="checkbox" id="hierarchyBox" title='bla' style="visibility: hidden;">Hierarchy mode<br>
+    </div>
+    <div style="position:absolute;top:15px;right:25px;font-size:14px;">
+        <input type="button" id="jsonButton" value="JSON Graph" title="bla bla"/>
+    </div>
 
 </div>
 <script src="//d3js.org/d3.v3.min.js"></script>
@@ -88,6 +94,10 @@
     var chartDiv = document.getElementById("chart");
     var jsonResponse = "JSONGraph.json" //Reading from file
     var jsonData;
+    var nodesWithDepth = 0;
+    var depths = [];
+    var yForces = {};
+    var hierarchyMode = false;
 
     ////////// tooltips  //////////
 
@@ -121,34 +131,44 @@
 
     ////////// legend  //////////
     var legend = {
-           "Processing script" : { color: "#DF6349",depthY: height*(8/8),dimmed: false},
-        "Batch of extractions" : { color: "#F8B624",depthY: height*(7/8),dimmed: false},
-                  "Extraction" : { color: "#D88A8A",depthY: height*(6/8),dimmed: false},
-              "Datamart table" : { color: "#84D663",depthY: height*(5/8),dimmed: false},
-                   "DBF table" : { color: "#B3B02D",depthY: height*(4/8),dimmed: false},
-               "Label of data" : { color: "#57A800",depthY: height*(3/8),dimmed: false},
-               "Dynamic table" : { color: "#8CC6ED",depthY: height*(2/8),dimmed: false},
-           "Non-managed table" : { color: "#C0C0C0",depthY: height*(1/8),dimmed: false}
+           "Processing script" : { color: "#DF6349",Y: height*(8/8),dimmed: false},
+        "Batch of extractions" : { color: "#F8B624",Y: height*(7/8),dimmed: false},
+                  "Extraction" : { color: "#D88A8A",Y: height*(6/8),dimmed: false},
+              "Datamart table" : { color: "#84D663",Y: height*(5/8),dimmed: false},
+                   "DBF table" : { color: "#B3B02D",Y: height*(4/8),dimmed: false},
+               "Label of data" : { color: "#57A800",Y: height*(3/8),dimmed: false},
+               "Dynamic table" : { color: "#8CC6ED",Y: height*(2/8),dimmed: false},
+           "Non-managed table" : { color: "#C0C0C0",Y: height*(1/8),dimmed: false}
 
     };
 
-    //buttons
-    d3.select("#chart")
-    .append("button")
-    .attr("id","jsonButton")
-    .style("position","absolute")
-    .style("top","10px")
-    .style("left","80%")
-    .text("JSON graph response")
+    ///////// Controls /////////////
+    //button
+    d3.select("#jsonButton")
     .on("click", function(){
         if(divJsonTooltip.style("opacity") == 0)
         {
             divJsonTooltip.html("<pre>" + JSON.stringify(jsonData, null, 1) + "</pre>")
-                            .style("left", "70%").style("top", 50 + "px").style("opacity", 1);
+                            .style("right", "25px").style("top", 50 + "px").style("opacity", 1);
         }
         else
             divJsonTooltip.html("").style("opacity", 0);
     });
+
+    //checkbox
+    d3.select("#hierarchyBox")
+        .on("change", function(){
+            if(this.checked)
+            {
+                hierarchyMode = true;
+
+            }
+            else
+            {
+                hierarchyMode = false;
+             }
+            force.start();  //to restart simulation, thus allowing nodes to reposition
+        });
 
 
    ////////// arrow markers  //////////
@@ -171,9 +191,9 @@
     ////////// Simulation //////////
     var force = d3.layout.force()
         .size([width, height])
-        .charge(-600)
+        .charge(-700)
         //.chargeDistance(600)
-        .linkDistance(70)
+        .linkDistance(100)
         //.linkStrength(1)
         //.gravity(.15)
         //.friction(.8)
@@ -190,7 +210,8 @@
 d3.json(jsonResponse, function (error, graphfile) {
         if (error) throw error;
 
-        //before pushing to simulation, make copy of the JSON Graph so it can be shown to user as json without the D3 simulation params added later on.
+        //before pushing to simulation, make copy of the JSON Graph so it can be shown to user
+        //as json without the D3 simulation params added later on.
         jsonData = JSON.parse(JSON.stringify(graphfile));
 
         update(graphfile.graphs[0].edges, graphfile.graphs[0].nodes);
@@ -201,8 +222,6 @@ d3.json(jsonResponse, function (error, graphfile) {
 //main draw function (called when loading json data)
 function update(links, nodes) {
 
-
-
     //// count objects by type ////
     var countPS = 0,
         countBoE = 0,
@@ -212,6 +231,10 @@ function update(links, nodes) {
         countDBFT = 0,
         countNonMgRep = 0;
         countDyn = 0;
+
+    nodesWithDepth = 0;
+    depths = [];
+    yForces = {};
 
     for(var i in nodes)
     {
@@ -224,8 +247,37 @@ function update(links, nodes) {
         if(nodes[i].type === "Non-managed table") { countNonMgRep++; legend[nodes[i].type].nodeCount = countNonMgRep; }
         if(nodes[i].type === "Dynamic table") { countDyn++; legend[nodes[i].type].nodeCount = countDyn; }
 
+        //check if node has metadata.depth property
+        if(checkNested(nodes[i],"metadata","depth")){
+
+            if(depths.indexOf(parseInt(nodes[i].metadata.depth)) === -1)
+              {
+                depths.push(parseInt(nodes[i].metadata.depth));
+              }
+            nodesWithDepth++;
+        }
     }
 
+    //check if all nodes have 'depth' property, if yes then show button and calculate yForces object
+    if(nodesWithDepth == nodes.length)
+    {
+        d3.select("#hierarchyBox").style("visibility","visible");
+
+        //sort depths array in DESC order (as we will use top (positive depth) and bottom (negative depth) when
+        //assigning y value for custom simulation forces top to bottom
+        depths.sort(function(a, b){return b - a });
+
+        var nbOfDepths = depths.length;
+        var margin = 100;
+
+        for(i = 0; i < nbOfDepths; i++)
+        {
+            yForces[depths[i].toString()] = Math.ceil((i+1) * (1/nbOfDepths) * (height-margin));
+        }
+    }
+
+
+    //legend
     var factor = 0.4;
     var legendArea = svg.append("g")
         .attr("class", "legend")
@@ -235,7 +287,7 @@ function update(links, nodes) {
             .enter().append("rect")
             .attr("id",function(d){ return 'legend-rect-' + d; })
             .attr("x",20)
-            .attr("y", function(d) { return factor*legend[d].depthY; })
+            .attr("y", function(d) { return factor*legend[d].Y; })
             .attr("rx", "8")
             .attr("ry", "8")
             .attr("height", 30)
@@ -254,7 +306,7 @@ function update(links, nodes) {
             .enter().append("text")
             .attr("id",function(d){ return 'legend-text-' +d; })
             .attr("x",25)
-            .attr("y", function(d) { return (factor*legend[d].depthY)+20; })
+            .attr("y", function(d) { return (factor*legend[d].Y)+20; })
             .style("fill", "black")
             .text(function(d) { return d + ' ('+legend[d].nodeCount+')';})
             .on("click",function(d){
@@ -461,7 +513,7 @@ function toggleNodeVisibility(nodeType){
             foundNodes.transition().duration(500).style("opacity",0.2);
             legend[nodeType].dimmed = true;
         }
-        console.log(legend);
+
 }
 
 function toggleOtherNodesVisibility(nodeType){
@@ -488,13 +540,28 @@ function toggleOtherNodesVisibility(nodeType){
 
         //dim all other nodes
         otherNodes.transition().duration(500).style("opacity",0.21);
-console.log(legend);
+
 }
 
-function tick() {
+function tick(e) {
 
         //update nodes position with each simulation tick
+
+        //check if user wants to position nodes based on hierarchy (i.e node.metadata.depth)
+        if(hierarchyMode)
+        {
+            //custom forces scalar
+            var k = 0.6 * e.alpha;
+
+            force.nodes().forEach(function(o) {
+
+                //apply custom force: this vertically based on the "type" of node
+                o.y += (yForces[o.metadata.depth] - o.y) * k;
+            });
+        }
+
         node.attr("transform", function (d) {return "translate(" + d.x + ", " + d.y + ")";});
+
 
         //use linknum to set the arc strength (0  = strieght line, while higher values gives an arc) this to allow
         //for 2 nodes to have multi-links and still be able to see links and lables of links
