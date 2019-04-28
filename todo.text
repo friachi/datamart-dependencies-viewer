@@ -4,7 +4,8 @@
 - DONE: add button to show source JSON Graph
 - DONE: fix ctrl click on legend (use case: click ctrl, then normal click, the latter will not directly have impact, it needs to be clicked twice in a row)
 - DONE: add hierarchy checkbox to force nodes into position (available only if nodes have metadata.depth)
-- add list of objects per legend
+
 - add URL to get json from REST or file
 - read graph metadata and show on screen
+- add list of objects per legend
 

@@ -3,6 +3,7 @@
 <html lang="en">
 <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
     <style type="text/css">
         .node {
             cursor: pointer;
@@ -41,6 +42,7 @@
 
          #mainbody {
             background:#fff;
+            font-family: 'Poppins';font-size: 18px;
 
         }
 
@@ -69,18 +71,77 @@
         }
 
 
+form {
+  outline: 0;
+  display: inline-block;
+  -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+}
 
+form > .textbox {
+  outline: 0;
+  height: 25px;
+  width: 544px;
+  line-height: 42px;
+  padding: 0 16px;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #212121;
+  border: 0;
+  float: left;
+  font-family: 'Poppins';
+  -webkit-border-radius: 4px 0 0 4px;
+  border-radius: 4px 0 0 4px;
+}
+
+form > .textbox:focus {
+  outline: 0;
+  background-color: #FFF;
+}
+
+form > .button {
+  outline: 0;
+  background: none;
+  background-color: rgba(38, 50, 56, 0.8);
+  float: left;
+  height: 25px;
+  width: 55px;
+  text-align: center;
+  line-height: 42px;
+  border: 0;
+  color: #FFF;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-family: 'Poppins';
+  font-size: 12px;
+  text-rendering: auto;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  -webkit-transition: background-color .4s ease;
+  transition: background-color .4s ease;
+  -webkit-border-radius: 0 4px 4px 0;
+  border-radius: 0 4px 4px 0;
+}
+
+form > .button:hover {
+  background-color: rgba(194, 4, 48, 1);
+
+}
     </style>
 </head>
 <body>
 <div id="container">
-    <div class="header"></div>
     <div class="mainbody" id="chart"></div>
     <div style="position:absolute;top:83px;right:25px;font-size:14px;">
         <input type="button" id="jsonButton" value="Toggle JSON Graph view" title="Show the raw JSON Graph response"/>
     </div>
     <div style="position:absolute;top:118px;right:25px;font-size:14px;visibility: hidden;" id="hcheckbox" >
         <input type="checkbox" id="hierarchyBox" title="nodes with +ev depth are placed towards the top" >Force Data-stream hierarchy<br>
+    </div>
+    <div>
+        <form style="position:absolute;top:20px;left:25%;font-size:14px;">
+            <input id="sendValue" type="text" class="textbox" placeholder="Send" value="http://localhost:9191/api/JSONGraph.json">
+            <input id="sendButton" value="Send" class="button">
+        </form>
     </div>
 
 </div>
@@ -151,6 +212,28 @@
 
 
     ///////// Controls /////////////
+
+    //API SEND
+     var sendURI = "http://localhost:9191/api/JSONGraph.json";
+    //fire new search based on search patter
+
+		$("#sendButton").click(function(){
+			sendURI = $('#sendValue').val();
+			sendRest(sendURI)
+
+		});
+
+
+	$(document).keypress(function(e) {
+		if(e.which == 13) {
+			sendPattern = $('#sendValue').val();
+			sendRest(sendURI)
+		}
+	});
+
+
+
+
     //button
     d3.select("#jsonButton")
     .on("click", function(){
@@ -627,6 +710,22 @@ function toggleOtherNodesVisibility(nodeType){
         otherNodes.transition().duration(500).style("opacity",0.21);
 
 }
+
+
+function sendRest(getURL)
+{
+    console.log("sent")
+	//get data and draw
+	/*
+	$.ajax({
+	   type: "GET",
+	   dataType: "json",
+	   url: getURL,
+	   success: function(response){   }
+	   });
+	  */
+}
+
 
 function tick(e) {
 
