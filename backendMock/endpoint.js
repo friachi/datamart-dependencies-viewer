@@ -10,15 +10,15 @@ const app = express();
 app.use(cors())
 
 
-app.get('/api/:videoId', (req,res,nex) => {
+app.get('/api/:filename', (req,res,nex) => {
 
 var obj;
 try {
-  obj = JSON.parse(fs.readFileSync('./data/'+req.params.videoId, 'utf8'));
+  obj = JSON.parse(fs.readFileSync('./data/'+req.params.filename, 'utf8'));
   res.send(obj);
   return;
 } catch (err) {
-  res.status(404).send(`Response 404: graph '${req.params.videoId}' is not found`);
+  res.status(404).send(`Response 404: graph '${req.params.filename}' is not found`);
 }
 
 
