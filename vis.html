@@ -131,7 +131,7 @@ form > .button:hover {
 <body>
 <div id="container">
     <div class="mainbody" id="chart"></div>
-    <div style="position:absolute;top:83px;right:25px;font-size:14px;">
+    <div style="position:absolute;top:83px;right:25px;font-size:14px;visibility: hidden;">
         <input type="button" id="jsonButton" value="Toggle JSON Graph view" title="Show the raw JSON Graph response"/>
     </div>
     <div style="position:absolute;top:118px;right:25px;font-size:14px;visibility: hidden;" id="hcheckbox" >
@@ -139,7 +139,7 @@ form > .button:hover {
     </div>
     <div>
         <form style="position:absolute;top:20px;left:25%;font-size:14px;">
-            <input id="sendValue" type="text" class="textbox" placeholder="Send" value="http://localhost:9191/api/JSONGraph.json">
+            <input id="sendValue" type="text" class="textbox" placeholder="Send" value="http://localhost:9191/api/JSONGraph2.json">
             <input id="sendButton" value="Send" class="button">
         </form>
     </div>
@@ -148,17 +148,97 @@ form > .button:hover {
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script>
 
-//////////////////////////////
+//Attach listeners to rest input field and send button
+ var sendURI = "";
+
+
+    $("#sendButton").click(function(){
+        sendURI = $('#sendValue').val();
+        $('.mainbody').empty();
+        sendRest(sendURI)
+
+    });
+
+
+    $(sendValue).on('keyup', function (e) {
+        if (e.keyCode == 13) {
+            sendURI = $('#sendValue').val();
+            $('.mainbody').empty();
+            sendRest(sendURI)
+        }
+    });
+
+
+function sendRest(getURL)
+{
+////////////////////////////////
+////////// Get Data  ///////////
+////////////////////////////////
+
+	//get data and draw
+	$.ajax({
+	   type: "GET",
+	   dataType: "json",
+	   url: getURL,
+	   success: function(res){
+
+                loadGraph(res);
+            },
+       error: function(jqXHR, textStatus, errorThrown){
+            console.log(jqXHR.status);
+            console.log(jqXHR.responseText);
+       }
+
+	   });
+
+}
+
+function loadGraph(response)
+{
+////////////////////////////////
+////////// Load Data  //////////
+////////////////////////////////
+
+
+
+        //before pushing to simulation, make copy of the JSON Graph so it can be shown to user
+        //as json without the D3 simulation params added later on.
+        jsonData = JSON.parse(JSON.stringify(response));
+
+        update(response.graphs[0].edges, response.graphs[0].nodes,jsonData);
+
+
+}
+
+
+function update(links, nodes, jsonData) {
+
+////////////////////////////////
+////////// Draw Data  //////////
+////////////////////////////////
+
+
 ////// Global variables //////
-//////////////////////////////
+
 
     var chartDiv = document.getElementById("chart");
-    var jsonResponse = "JSONGraph.json" //Reading from file
     var jsonData;
     var nodesWithDepth = 0;
     var depths = [];
     var yForces = {};
     var hierarchyMode = false;
+
+    ////////// svg  //////////
+    var svg = d3.select(chartDiv).append("svg"),
+        node,
+        link;
+
+        width = chartDiv.clientWidth;
+        height = chartDiv.clientHeight;
+
+        svg
+          .attr("width", width)
+          .attr("height", height);
 
     ////////// tooltips  //////////
 
@@ -178,17 +258,7 @@ form > .button:hover {
     .style("opacity", 0);
 
 
-    ////////// svg  //////////
-    var svg = d3.select(chartDiv).append("svg"),
-        node,
-        link;
 
-        width = chartDiv.clientWidth;
-        height = chartDiv.clientHeight;
-
-        svg
-          .attr("width", width)
-          .attr("height", height);
 
     ////////// legend  //////////
     var legend = {
@@ -213,26 +283,7 @@ form > .button:hover {
 
     ///////// Controls /////////////
 
-    //API SEND
-     var sendURI = "http://localhost:9191/api/JSONGraph.json";
-    //fire new search based on search patter
-
-		$("#sendButton").click(function(){
-			sendURI = $('#sendValue').val();
-			sendRest(sendURI)
-
-		});
-
-
-	$(document).keypress(function(e) {
-		if(e.which == 13) {
-			sendPattern = $('#sendValue').val();
-			sendRest(sendURI)
-		}
-	});
-
-
-
+    d3.select("#jsonButton").style("visibility","visible");
 
     //button
     d3.select("#jsonButton")
@@ -343,8 +394,6 @@ form > .button:hover {
 
 
 
-//main draw function (called when loading json data)
-function update(links, nodes) {
 
     //// count objects by type ////
     var countPS = 0,
@@ -610,9 +659,6 @@ function update(links, nodes) {
      force.links(links);
      force.start();
 
-
-}//End Update fn
-
 /////////////////////////////////
 ////////// Utility fns //////////
 /////////////////////////////////
@@ -698,44 +744,6 @@ function toggleOtherNodesVisibility(nodeType){
 
 }
 
-
-function sendRest(getURL)
-{
-////////////////////////////////
-////////// Get Data  //////////
-////////////////////////////////
-
-	//get data and draw
-	$.ajax({
-	   type: "GET",
-	   dataType: "json",
-	   url: getURL,
-	   success: function(res){
-            loadGraph(jsonResponse);
-	    }
-	   });
-
-}
-
-function loadGraph(response)
-{
-////////////////////////////////
-////////// Load Data  //////////
-////////////////////////////////
-
-d3.json(response, function (error, graphfile) {
-        if (error) throw error;
-
-        //before pushing to simulation, make copy of the JSON Graph so it can be shown to user
-        //as json without the D3 simulation params added later on.
-        jsonData = JSON.parse(JSON.stringify(graphfile));
-
-        update(graphfile.graphs[0].edges, graphfile.graphs[0].nodes);
-    });
-
-}
-
-
 function tick(e) {
 
         //update nodes position with each simulation tick
@@ -790,6 +798,8 @@ function tick(e) {
         });
 
 }//End Ticked function
+
+}//End Update fn
 
 
 </script>
