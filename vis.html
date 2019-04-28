@@ -614,7 +614,7 @@ function update(links, nodes, jsonData) {
                     temp.metadata = d.metadata;
                 }
          //show tooltip
-         divEdgeTooltip.transition().delay(300).duration(200).style("opacity", .9);
+         divEdgeTooltip.transition().delay(1000).duration(200).style("opacity", .9);
                     divEdgeTooltip.html("<pre>" + JSON.stringify(temp, null, 1) + "</pre>")
                         .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px");
          })
@@ -658,7 +658,7 @@ function update(links, nodes, jsonData) {
             }
 
             //show tooltip
-            divNodeTooltip.transition().delay(300).duration(200).style("opacity", .9);
+            divNodeTooltip.transition().delay(1000).duration(200).style("opacity", .9);
                         divNodeTooltip.html("<pre>" + JSON.stringify(temp, null, 1) + "</pre>")
                             .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px");
         })
