@@ -77,7 +77,7 @@
     <div class="header"></div>
     <div class="mainbody" id="chart"></div>
     <div style="position:absolute;top:15px;right:25px;font-size:14px;">
-        <input type="button" id="jsonButton" value="JSON Graph" title="Show the raw JSON Graph response"/>
+        <input type="button" id="jsonButton" value="Toggle JSON Graph view" title="Show the raw JSON Graph response"/>
     </div>
     <div style="position:absolute;top:50px;right:25px;font-size:14px;visibility: hidden;" id="hcheckbox" >
         <input type="checkbox" id="hierarchyBox" title="nodes with +ev depth are placed towards the top" >Force Data-stream hierarchy<br>
@@ -131,16 +131,24 @@
 
     ////////// legend  //////////
     var legend = {
-           "Processing script" : { color: "#DF6349",Y: height*(8/8),dimmed: false},
-        "Batch of extractions" : { color: "#F8B624",Y: height*(7/8),dimmed: false},
-                  "Extraction" : { color: "#D88A8A",Y: height*(6/8),dimmed: false},
-              "Datamart table" : { color: "#84D663",Y: height*(5/8),dimmed: false},
-                   "DBF table" : { color: "#B3B02D",Y: height*(4/8),dimmed: false},
-               "Label of data" : { color: "#57A800",Y: height*(3/8),dimmed: false},
-               "Dynamic table" : { color: "#8CC6ED",Y: height*(2/8),dimmed: false},
-           "Non-managed table" : { color: "#C0C0C0",Y: height*(1/8),dimmed: false}
-
+            "Non-managed table" : { color: "#C0C0C0" },
+                "Dynamic table" : { color: "#8CC6ED" },
+               "Datamart table" : { color: "#84D663" },
+                   "Extraction" : { color: "#D88A8A" },
+                "Label of data" : { color: "#57A800" },
+         "Batch of extractions" : { color: "#F8B624" },
+            "Processing script" : { color: "#DF6349" }
     };
+
+    //Set additional properties for each legend
+     var nbOfTypes = ObjectLength(legend);
+     var k = 1;
+     for (const key of Object.keys(legend)) {
+        legend[key].Y = height*(k/nbOfTypes);
+        legend[key].dimmed = false;
+        k++;
+     }
+
 
     ///////// Controls /////////////
     //button
@@ -430,12 +438,22 @@ function update(links, nodes) {
             .attr("font-size","15")
             .attr("fill","#aaa")
         .on("mouseover", function(d) {
+                //highlight link in red
                 d3.select(this).style("fill", "red").attr('fill-opacity', 1);
-                if(d.hasOwnProperty("metadata")){
-                    divEdgeTooltip.transition().delay(300).duration(200).style("opacity", .9);
-                    divEdgeTooltip.html("<pre>" + JSON.stringify(d.metadata, null, 1) + "</pre>")
-                        .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px");
+
+                //create an object representing the node and exclude all d3 added properties to enhance visibility
+                var temp = {
+                    "source": d.source.id,
+                    "relation": d.relation,
+                    "target": d.target.id
                 }
+                if(d.hasOwnProperty("metadata")){
+                    temp.metadata = d.metadata;
+                }
+         //show tooltip
+         divEdgeTooltip.transition().delay(300).duration(200).style("opacity", .9);
+                    divEdgeTooltip.html("<pre>" + JSON.stringify(temp, null, 1) + "</pre>")
+                        .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px");
          })
         .on("mouseout", function(d) {
                 d3.select(this).style("fill", "#999").attr('fill-opacity', 0.6);
@@ -466,11 +484,20 @@ function update(links, nodes) {
         .on("dblclick", dblclick)
         .call(drag)
         .on("mouseover", function(d) {
+            //create an object representing the node and exclude all d3 added properties to enhance visibility
+            var temp = {
+                "id": d.id,
+                "type": d.type,
+                "label": d.label,
+            };
             if(d.hasOwnProperty("metadata")){
-                        divNodeTooltip.transition().delay(300).duration(200).style("opacity", .9);
-                        divNodeTooltip.html("<pre>" + JSON.stringify(d.metadata, null, 1) + "</pre>")
+                        temp.metadata = d.metadata;
+            }
+
+            //show tooltip
+            divNodeTooltip.transition().delay(300).duration(200).style("opacity", .9);
+                        divNodeTooltip.html("<pre>" + JSON.stringify(temp, null, 1) + "</pre>")
                             .style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px");
-                    }
         })
         .on("mouseout", function(d) {
             divNodeTooltip.transition()
@@ -542,6 +569,16 @@ function checkNested(obj) {
           }
           return true;
 }
+
+function ObjectLength( object ) {
+    var length = 0;
+    for( var key in object ) {
+        if( object.hasOwnProperty(key) ) {
+            ++length;
+        }
+    }
+    return length;
+};
 
 
 function toggleNodeVisibility(nodeType){

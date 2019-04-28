@@ -99,7 +99,7 @@
       },
       {
         "id": "7",
-        "type": "DBF table",
+        "type": "Non-managed table",
         "label": "T1_DBF",
         "metadata": {
           "depth" : "4"
@@ -107,7 +107,7 @@
       },
       {
         "id": "8",
-        "type": "DBF table",
+        "type": "Non-managed table",
         "label": "T2_DBF",
         "metadata": {
           "depth" : "2",
