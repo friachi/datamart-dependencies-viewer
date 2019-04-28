@@ -340,19 +340,6 @@ form > .button:hover {
        var drag = force.drag()
         .on("dragstart", dragstart);
 
-////////////////////////////////
-////////// Load Data  //////////
-////////////////////////////////
-
-d3.json(jsonResponse, function (error, graphfile) {
-        if (error) throw error;
-
-        //before pushing to simulation, make copy of the JSON Graph so it can be shown to user
-        //as json without the D3 simulation params added later on.
-        jsonData = JSON.parse(JSON.stringify(graphfile));
-
-        update(graphfile.graphs[0].edges, graphfile.graphs[0].nodes);
-    });
 
 
 
@@ -714,16 +701,38 @@ function toggleOtherNodesVisibility(nodeType){
 
 function sendRest(getURL)
 {
-    console.log("sent")
+////////////////////////////////
+////////// Get Data  //////////
+////////////////////////////////
+
 	//get data and draw
-	/*
 	$.ajax({
 	   type: "GET",
 	   dataType: "json",
 	   url: getURL,
-	   success: function(response){   }
+	   success: function(res){
+            loadGraph(jsonResponse);
+	    }
 	   });
-	  */
+
+}
+
+function loadGraph(response)
+{
+////////////////////////////////
+////////// Load Data  //////////
+////////////////////////////////
+
+d3.json(response, function (error, graphfile) {
+        if (error) throw error;
+
+        //before pushing to simulation, make copy of the JSON Graph so it can be shown to user
+        //as json without the D3 simulation params added later on.
+        jsonData = JSON.parse(JSON.stringify(graphfile));
+
+        update(graphfile.graphs[0].edges, graphfile.graphs[0].nodes);
+    });
+
 }
 
 
