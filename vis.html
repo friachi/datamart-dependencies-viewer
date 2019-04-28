@@ -120,12 +120,43 @@ form > .button {
   transition: background-color .4s ease;
   -webkit-border-radius: 0 4px 4px 0;
   border-radius: 0 4px 4px 0;
+
+}
+
+form > .tokenButton {
+  outline: 0;
+  background: none;
+  background-color: rgba(175, 175, 175, 0.8);
+  float: left;
+  height: 25px;
+  width: 55px;
+  text-align: center;
+  line-height: 42px;
+  border: 0;
+  color: #636363;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-family: 'Poppins';
+  font-size: 12px;
+  text-rendering: auto;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  -webkit-transition: background-color .4s ease;
+  transition: background-color .4s ease;
+  -webkit-border-radius:  4px 0 0 4px;
+  border-radius: 4px 0 0 4px;
+  text-overflow: ellipsis;
+
 }
 
 form > .button:hover {
   background-color: rgba(194, 4, 48, 1);
 
 }
+form > .tokenButton:hover {
+  background-color: rgba(42, 79, 175, 1);
+  color: #FFF;
+
+}
+
     </style>
 </head>
 <body>
@@ -139,7 +170,8 @@ form > .button:hover {
     </div>
     <div>
         <form style="position:absolute;top:20px;left:25%;font-size:14px;">
-            <input id="sendValue" type="text" class="textbox" placeholder="Send" value="http://localhost:9191/api/JSONGraph2.json">
+            <input id="tokenButton" value="token" class="tokenButton">
+            <input id="sendValue" type="text" class="textbox" placeholder="Send" value="http://localhost:9191/api/JSONGraph1.json">
             <input id="sendButton" value="Send" class="button">
         </form>
     </div>
@@ -149,13 +181,15 @@ form > .button:hover {
 <script>
 
 //Attach listeners to rest input field and send button
- var sendURI = "";
 
+ var sendURI = "";
+ var token = "blabla";
 
     $("#sendButton").click(function(){
         sendURI = $('#sendValue').val();
+        token = $('#tokenButton').val();
         $('.mainbody').empty();
-        sendRest(sendURI)
+        sendRest(sendURI,token)
 
     });
 
@@ -163,23 +197,29 @@ form > .button:hover {
     $(sendValue).on('keyup', function (e) {
         if (e.keyCode == 13) {
             sendURI = $('#sendValue').val();
+            token = $('#tokenButton').val();
             $('.mainbody').empty();
-            sendRest(sendURI)
+            sendRest(sendURI,token)
         }
     });
 
 
-function sendRest(getURL)
-{
+
 ////////////////////////////////
 ////////// Get Data  ///////////
 ////////////////////////////////
+function sendRest(getURL, token)
+{
+
 
 	//get data and draw
 	$.ajax({
 	   type: "GET",
 	   dataType: "json",
 	   url: getURL,
+	   beforeSend: function (xhr) {
+           xhr.setRequestHeader ("Authorization", "Bearer "+token);
+        },
 	   success: function(res){
 
                 loadGraph(res);
@@ -193,11 +233,14 @@ function sendRest(getURL)
 
 }
 
-function loadGraph(response)
-{
+
+
 ////////////////////////////////
 ////////// Load Data  //////////
 ////////////////////////////////
+function loadGraph(response)
+{
+
 
 
 
@@ -211,11 +254,11 @@ function loadGraph(response)
 }
 
 
-function update(links, nodes, jsonData) {
 
 ////////////////////////////////
 ////////// Draw Data  //////////
 ////////////////////////////////
+function update(links, nodes, jsonData) {
 
 
 ////// Global variables //////
