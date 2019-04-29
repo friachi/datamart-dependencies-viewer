@@ -67,7 +67,7 @@
             border: 0px;
             border-radius: 4px;
             overflow-y: scroll;
-            height: 50%;
+            height: 90%;
         }
 
 
@@ -162,10 +162,10 @@ form > .tokenButton:hover {
 <body>
 <div id="container">
     <div class="mainbody" id="chart"></div>
-    <div style="position:absolute;top:83px;right:25px;font-size:14px;visibility: hidden;">
+    <div style="position:absolute;top:20px;right:25px;font-size:14px;visibility: hidden;">
         <input type="button" id="jsonButton" value="Toggle JSON Graph view" title="Show the raw JSON Graph response"/>
     </div>
-    <div style="position:absolute;top:118px;right:25px;font-size:14px;visibility: hidden;" id="hcheckbox" >
+    <div style="position:absolute;top:55px;right:25px;font-size:14px;visibility: hidden;" id="hcheckbox" >
         <input type="checkbox" id="hierarchyBox" title="nodes with +ev depth are placed towards the top" >Force Data-stream hierarchy<br>
     </div>
     <div>
@@ -194,13 +194,17 @@ form > .tokenButton:hover {
     });
 
 
-    $(sendValue).on('keyup', function (e) {
+    $("#sendValue").on('keyup', function (e) {
         if (e.keyCode == 13) {
             sendURI = $('#sendValue').val();
             token = $('#tokenButton').val();
             $('.mainbody').empty();
             sendRest(sendURI,token)
         }
+    });
+
+    $("#tokenButton").click(function () {
+        $(this).select();
     });
 
 
@@ -301,29 +305,38 @@ function update(links, nodes, jsonData) {
     .attr("class", "jsonDiv")
     .style("opacity", 0);
 
+    // create Legend dynamically based on available node types.
 
+     var legend = {};
+     for(var i in nodes)
+    {
+        if(legend.hasOwnProperty(nodes[i].type)) {
+            legend[nodes[i].type].nodeCount += 1;
+        }
+        else
+         {
+          legend[nodes[i].type] = {};
+          legend[nodes[i].type].nodeCount = 1;
 
+         }
 
-    ////////// legend  //////////
-    var legend = {
-            "Non-managed table" : { color: "#C0C0C0" },
-                "Dynamic table" : { color: "#8CC6ED" },
-               "Datamart table" : { color: "#84D663" },
-                   "Extraction" : { color: "#D88A8A" },
-                "Label of data" : { color: "#57A800" },
-         "Batch of extractions" : { color: "#F8B624" },
-            "Processing script" : { color: "#DF6349" }
-    };
+    }
 
-    //Set additional properties for each legend
-     var nbOfTypes = ObjectLength(legend);
-     var k = 1;
+    var nbOfTypes = ObjectLength(legend);
+
+    var legendColor = d3.scale.linear().domain([1,nbOfTypes])
+      .interpolate(d3.interpolateHcl)
+      .range([d3.rgb("#007AFF"), d3.rgb('#FFF500')]);
+
+     var k = 0;
      for (const key of Object.keys(legend)) {
-        legend[key].Y = height*(k/nbOfTypes);
+        legend[key].color = legendColor(k);
         legend[key].dimmed = false;
+        legend[key].Y = height*((k+1)/nbOfTypes);
         k++;
      }
 
+     console.log(legend);
 
     ///////// Controls /////////////
 
@@ -335,7 +348,7 @@ function update(links, nodes, jsonData) {
         if(divJsonTooltip.style("opacity") == 0)
         {
             divJsonTooltip.html("<pre>" + JSON.stringify(jsonData, null, 1) + "</pre>")
-                            .style("right", "25px").style("top", 110 + "px").style("opacity", 1);
+                            .style("right", "25px").style("top", 57 + "px").style("opacity", 1);
         }
         else
             divJsonTooltip.html("").style("opacity", 0);
@@ -399,14 +412,14 @@ function update(links, nodes, jsonData) {
         .style("stroke","grey")
         .attr("x1",width-50)
         .attr("x2",width-50)
-        .attr("y1","170")
+        .attr("y1","107")
         .attr("y2",height-50)
         .attr('marker-start', 'url(#arrow)')
         .attr('marker-end', 'url(#arrow)')
 
     verticalLine.append("text")
         .attr("dx", width-80)
-        .attr("dy", 160)
+        .attr("dy", 97)
         .text("Upstream")
         .attr('fill', '#999')
         .style('stroke','none')
@@ -459,7 +472,6 @@ function update(links, nodes, jsonData) {
         if(nodes[i].type === "Batch of extractions") { countBoE++; legend[nodes[i].type].nodeCount = countBoE; }
         if(nodes[i].type === "Extraction") { countE++; legend[nodes[i].type].nodeCount = countE; }
         if(nodes[i].type === "Datamart table") { countREPT++; legend[nodes[i].type].nodeCount = countREPT; }
-        if(nodes[i].type === "DBF table") { countDBFT++; legend[nodes[i].type].nodeCount = countDBFT; }
         if(nodes[i].type === "Label of data") { countLoD++; legend[nodes[i].type].nodeCount = countLoD; }
         if(nodes[i].type === "Non-managed table") { countNonMgRep++; legend[nodes[i].type].nodeCount = countNonMgRep; }
         if(nodes[i].type === "Dynamic table") { countDyn++; legend[nodes[i].type].nodeCount = countDyn; }
