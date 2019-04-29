@@ -243,9 +243,9 @@ function sendRest(getURL, token)
                 loadGraph(res);
             },
        error: function(jqXHR, textStatus, errorThrown){
-            console.log(jqXHR.status);
-            console.log(jqXHR.responseText);
-            alert('Request failed. Check browser console for more info (F12)');
+            console.log("status: " + jqXHR.status);
+            console.log("response Text: " + jqXHR.responseText);
+            alert('Request failed. Check browser console for more info (hit F12 in Chrome)');
        }
 
 	   });
