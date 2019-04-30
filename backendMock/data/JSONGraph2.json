@@ -1,6 +1,6 @@
 {
   "graphs": [{
-    "directed": true,
+    "directed": "true",
     "type": "Operational",
     "label": "Table, extraction and label of data dependencies for BoE1",
     "metadata": {
@@ -84,8 +84,8 @@
           "depth": "3",
           "exportable" : "true",
           "description": "Extracting PL",
-          "murex": false,
-          "additional": false
+          "murex": "false",
+          "additional": "false";
         }
       },
       {

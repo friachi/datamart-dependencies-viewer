@@ -18,7 +18,8 @@ Features:
     - click on a legend to hide/show all of its nodes
     - double click on a legend to hide all other nodes
     - 'Force data-stream hierarchy' uses the node.metadata.depth (if available) to position the nodes on screen top to bottom, such that data sources (ex: datamart, dbf tables) are on top, while batches or processing scripts are at the bottom.
-- View the raw JSON graph response by clicking on 'Toggle JSON Graph view'
+- View the raw JSON graph response by clicking on '{ JSON }. double click to export to a file: graph.json
+- View the raw graph in GML format by clicking on '{ GML }. double click to export to a file: graph.gml (can be visualized using other tools like Gephi)
 
 ## mock server
  

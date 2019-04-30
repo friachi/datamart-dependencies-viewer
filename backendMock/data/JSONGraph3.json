@@ -1,7 +1,7 @@
 {
   "graphs": [
     {
-      "directed": true,
+      "directed": "true",
       "type": "Operational",
       "label": "Table, extraction and label of data dependencies for BoE1",
       "metadata": {

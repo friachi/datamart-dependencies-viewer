@@ -70,6 +70,21 @@
             height: 90%;
         }
 
+        div.gmlDiv
+        {
+            position: absolute;
+            text-align: left;
+            width: auto;
+            word-wrap: break-word;
+            padding: 2px;
+            font: 12px sans-serif;
+            background: lightsteelblue;
+            border: 0px;
+            border-radius: 4px;
+            overflow-y: scroll;
+            height: 90%;
+        }
+
 
 form {
   outline: 0;
@@ -192,7 +207,12 @@ transition: all 0.4s ease 0s;
     <div class="mainbody" id="chart"></div>
     <div style="position:absolute;top:20px;right:25px;font-size:14px;visibility: hidden;">
         <input type="button" id="jsonButton" class="example_c" value="{ JSON }" title="Show the raw JSON Graph response"/>
+
     </div>
+    <div style="position:absolute;top:20px;right:95px;font-size:14px;visibility: hidden;">
+        <input type="button" id="gmlButton" class="example_c" value="[ GML ]" title="Show a GML representation of the graph"/>
+    </div>
+
     <div style="position:absolute;top:55px;right:25px;font-size:14px;visibility: hidden;" id="hcheckbox" >
         <input type="checkbox" id="hierarchyBox" title="nodes with +ev depth are placed towards the top" >Force Data-stream hierarchy<br>
     </div>
@@ -295,7 +315,6 @@ function loadGraph(response)
 ////////// Draw Data  //////////
 ////////////////////////////////
 function update(links, nodes, jsonData) {
-convertToGML(jsonData);
 
 ////// Global variables //////
 
@@ -336,6 +355,11 @@ convertToGML(jsonData);
     .attr("class", "jsonDiv")
     .style("opacity", 0);
 
+    // Define the div for the GML
+    var divGmlTooltip= d3.select("body").append("div")
+    .attr("class", "gmlDiv")
+    .style("opacity", 0);
+
     // create Legend dynamically based on available node types.
 
      var legend = {};
@@ -370,8 +394,9 @@ convertToGML(jsonData);
     ///////// Controls /////////////
 
     d3.select("#jsonButton").style("visibility","visible");
+    d3.select("#gmlButton").style("visibility","visible");
 
-    //button
+    //buttons
     d3.select("#jsonButton")
     .on("click", function(){
         if(divJsonTooltip.style("opacity") == 0)
@@ -381,6 +406,37 @@ convertToGML(jsonData);
         }
         else
             divJsonTooltip.html("").style("opacity", 0);
+    })
+    .on("dblclick",function(){
+    var textToSave = JSON.stringify(jsonData, null, 1);
+
+    var hiddenElement = document.createElement('a');
+
+    hiddenElement.href = 'data:attachment/text,' + encodeURI(textToSave);
+    hiddenElement.target = '_blank';
+    hiddenElement.download = 'graph.json';
+    hiddenElement.click();
+    });
+
+    d3.select("#gmlButton")
+    .on("click", function(){
+        if(divGmlTooltip.style("opacity") == 0)
+        {
+            divGmlTooltip.html("<pre>" + convertToGML(jsonData) + "</pre>")
+                            .style("right", "25px").style("top", 57 + "px").style("opacity", 1);
+        }
+        else
+            divGmlTooltip.html("").style("opacity", 0);
+    })
+    .on("dblclick",function(){
+    var textToSave = convertToGML(jsonData);
+
+    var hiddenElement = document.createElement('a');
+
+    hiddenElement.href = 'data:attachment/text,' + encodeURI(textToSave);
+    hiddenElement.target = '_blank';
+    hiddenElement.download = 'graph.gml';
+    hiddenElement.click();
     });
 
     //checkbox
@@ -831,79 +887,77 @@ function toggleOtherNodesVisibility(nodeType){
 
 function convertToGML(jsonData)
 {
-//can convert JSON graph to GML up to 2 nested objects depth under for example node.metadata.output
+//converts JSON graph to GML up to a depth of 2 nested objects for example node.metadata{}.output{}
 var gml = 'graph [\n';
 
 
-jsonData.graphs[0].nodes.forEach(function(d){
-gml += ' node [\n';
-var k = 0;
-     for (const key of Object.keys(d)) {
-        if(typeof(d[key]) === 'object')
-        {    var nested1 = d[key];
-             gml +='  '+ key + ' [\n';
-             for (const metaKey of Object.keys(nested1)) {
-                if(typeof(nested1[metaKey]) === 'object'){
-                    gml +='   ' + metaKey + ' [\n';
-                    var nested2 = nested1[metaKey];
-                    for (const metaKey2 of Object.keys(nested2)) {
-                        gml +='     ' + metaKey2 + ' "' + nested2[metaKey2] + '"\n';
+    jsonData.graphs[0].nodes.forEach(function(d){
+    gml += ' node [\n';
+    var k = 0;
+         for (const key of Object.keys(d)) {
+            if(typeof(d[key]) === 'object')
+            {    var nested1 = d[key];
+                 gml +='  '+ key + ' [\n';
+                 for (const metaKey of Object.keys(nested1)) {
+                    if(typeof(nested1[metaKey]) === 'object'){
+                        gml +='   ' + metaKey + ' [\n';
+                        var nested2 = nested1[metaKey];
+                        for (const metaKey2 of Object.keys(nested2)) {
+                            gml +='     ' + metaKey2 + ' "' + nested2[metaKey2] + '"\n';
+                        }
+                        gml += '    ]\n';
                     }
-                    gml += '    ]\n';
-                }
-                else {
-                    gml += '   ' + metaKey + ' "' + nested1[metaKey] + '"\n';
-                }
-             }
-             gml += '  ]\n';
-
-        }
-        else
-        {
-            gml +='  ' + key + ' "' + d[key] + '"\n';
-        }
-     }
-gml += ' ]\n'; //end nodes
-});
-
-
-
-
-jsonData.graphs[0].edges.forEach(function(d){
-gml += ' edge [\n';
-var k = 0;
-     for (const key of Object.keys(d)) {
-        if(typeof(d[key]) === 'object')
-        {    var nested1 = d[key];
-             gml +='  '+ key + ' [\n';
-             for (const metaKey of Object.keys(nested1)) {
-                if(typeof(nested1[metaKey]) === 'object'){
-                    gml +='   ' + metaKey + ' [\n';
-                    var nested2 = nested1[metaKey];
-                    for (const metaKey2 of Object.keys(nested2)) {
-                        gml +='     ' + metaKey2 + ' "' + nested2[metaKey2] + '"\n';
+                    else {
+                        gml += '   ' + metaKey + ' "' + nested1[metaKey] + '"\n';
                     }
-                    gml += '    ]\n';
-                }
-                else {
-                    gml += '   ' + metaKey + ' "' + nested1[metaKey] + '"\n';
-                }
-             }
-             gml += '  ]\n';
+                 }
+                 gml += '  ]\n';
 
-        }
-        else
-        {
-            gml +='  ' + key + ' "' + d[key] + '"\n';
-        }
-     }
-gml += ' ]\n'; //end nodes
-});
+            }
+            else
+            {
+                gml +='  ' + key + ' "' + d[key] + '"\n';
+            }
+         }
+    gml += ' ]\n'; //end nodes
+    });
+
+
+    jsonData.graphs[0].edges.forEach(function(d){
+    gml += ' edge [\n';
+    var k = 0;
+         for (const key of Object.keys(d)) {
+            if(typeof(d[key]) === 'object')
+            {    var nested1 = d[key];
+                 gml +='  '+ key + ' [\n';
+                 for (const metaKey of Object.keys(nested1)) {
+                    if(typeof(nested1[metaKey]) === 'object'){
+                        gml +='   ' + metaKey + ' [\n';
+                        var nested2 = nested1[metaKey];
+                        for (const metaKey2 of Object.keys(nested2)) {
+                            gml +='     ' + metaKey2 + ' "' + nested2[metaKey2] + '"\n';
+                        }
+                        gml += '    ]\n';
+                    }
+                    else {
+                        gml += '   ' + metaKey + ' "' + nested1[metaKey] + '"\n';
+                    }
+                 }
+                 gml += '  ]\n';
+
+            }
+            else
+            {
+                gml +='  ' + key + ' "' + d[key] + '"\n';
+            }
+         }
+    gml += ' ]\n'; //end nodes
+    });
 
 
 gml += ']\n'; //end graph
-console.log(gml);
-
+//console.log(gml);
+return gml
 
 }
 
