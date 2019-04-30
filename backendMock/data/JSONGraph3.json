@@ -1,0 +1,47 @@
+{
+  "graphs": [
+    {
+      "directed": true,
+      "type": "Operational",
+      "label": "Table, extraction and label of data dependencies for BoE1",
+      "metadata": {
+        "query": "BoE1"
+      },
+      "nodes": [
+        {
+          "id": "0",
+          "type": "Processing script",
+          "label": "PS1",
+          "metadata": {
+            "depth": "-1",
+            "exportable": "true",
+            "description": "End of day PL report extracting to csv and table"
+          }
+        },
+        {
+          "id": "1",
+          "type": "Batch of extractions",
+          "label": "BoE1",
+          "metadata": {
+            "depth": "0",
+            "out" : { "key" :  "value" },
+            "exportable": "true",
+            "description": "End of day PL report extracting to csv and table",
+            "mandatory-for-eod": "true",
+            "label-of-data": "PL_EOD"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "source": "0",
+          "relation": "Executes",
+          "target": "1",
+          "metadata": {
+            "unit": "BATCH OF EXTRACTIONS"
+          }
+        }
+      ]
+    }
+  ]
+}

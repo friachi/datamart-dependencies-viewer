@@ -295,7 +295,7 @@ function loadGraph(response)
 ////////// Draw Data  //////////
 ////////////////////////////////
 function update(links, nodes, jsonData) {
-
+convertToGML(jsonData);
 
 ////// Global variables //////
 
@@ -366,8 +366,6 @@ function update(links, nodes, jsonData) {
         legend[key].Y = height*((k+1)/nbOfTypes);
         k++;
      }
-
-     console.log(legend);
 
     ///////// Controls /////////////
 
@@ -828,6 +826,84 @@ function toggleOtherNodesVisibility(nodeType){
 
         //dim all other nodes
         otherNodes.transition().duration(500).style("opacity",0.21);
+
+}
+
+function convertToGML(jsonData)
+{
+//can convert JSON graph to GML up to 2 nested objects depth under for example node.metadata.output
+var gml = 'graph [\n';
+
+
+jsonData.graphs[0].nodes.forEach(function(d){
+gml += ' node [\n';
+var k = 0;
+     for (const key of Object.keys(d)) {
+        if(typeof(d[key]) === 'object')
+        {    var nested1 = d[key];
+             gml +='  '+ key + ' [\n';
+             for (const metaKey of Object.keys(nested1)) {
+                if(typeof(nested1[metaKey]) === 'object'){
+                    gml +='   ' + metaKey + ' [\n';
+                    var nested2 = nested1[metaKey];
+                    for (const metaKey2 of Object.keys(nested2)) {
+                        gml +='     ' + metaKey2 + ' "' + nested2[metaKey2] + '"\n';
+                    }
+                    gml += '    ]\n';
+                }
+                else {
+                    gml += '   ' + metaKey + ' "' + nested1[metaKey] + '"\n';
+                }
+             }
+             gml += '  ]\n';
+
+        }
+        else
+        {
+            gml +='  ' + key + ' "' + d[key] + '"\n';
+        }
+     }
+gml += ' ]\n'; //end nodes
+});
+
+
+
+
+jsonData.graphs[0].edges.forEach(function(d){
+gml += ' edge [\n';
+var k = 0;
+     for (const key of Object.keys(d)) {
+        if(typeof(d[key]) === 'object')
+        {    var nested1 = d[key];
+             gml +='  '+ key + ' [\n';
+             for (const metaKey of Object.keys(nested1)) {
+                if(typeof(nested1[metaKey]) === 'object'){
+                    gml +='   ' + metaKey + ' [\n';
+                    var nested2 = nested1[metaKey];
+                    for (const metaKey2 of Object.keys(nested2)) {
+                        gml +='     ' + metaKey2 + ' "' + nested2[metaKey2] + '"\n';
+                    }
+                    gml += '    ]\n';
+                }
+                else {
+                    gml += '   ' + metaKey + ' "' + nested1[metaKey] + '"\n';
+                }
+             }
+             gml += '  ]\n';
+
+        }
+        else
+        {
+            gml +='  ' + key + ' "' + d[key] + '"\n';
+        }
+     }
+gml += ' ]\n'; //end nodes
+});
+
+
+gml += ']\n'; //end graph
+console.log(gml);
+
 
 }
 
