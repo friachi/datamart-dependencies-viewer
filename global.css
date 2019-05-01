@@ -1,0 +1,194 @@
+        .node {
+            cursor: pointer;
+        }
+
+        .edgepath {
+            fill: none;
+            stroke: #999;
+            stroke-opacity: .6;
+            stroke-width: 1px;
+
+        }
+
+        .edgelabel {
+
+        }
+
+        div.tooltip {
+            position: absolute;
+            text-align: left;
+            width: auto;
+            word-wrap: break-word;
+            padding: 2px;
+            font: 12px sans-serif;
+            background: lightsteelblue;
+            border: 0px;
+            border-radius: 4px;
+            pointer-events: none;
+
+        }
+
+        .legend {
+             font: 14px sans-serif;
+             cursor: pointer;
+        }
+
+         #mainbody {
+            background:#fff;
+            font-family: 'Poppins';font-size: 18px;
+
+        }
+
+        #chart {
+            position: fixed;
+            left: 0px;
+            right: 0px;
+            top: 0px;
+            bottom: 0px;
+
+        }
+
+        div.jsonDiv
+        {
+            position: absolute;
+            text-align: left;
+            width: auto;
+            word-wrap: break-word;
+            padding: 2px;
+            font: 12px sans-serif;
+            background: lightsteelblue;
+            border: 0px;
+            border-radius: 4px;
+            overflow-y: scroll;
+            height: 90%;
+        }
+
+        div.gmlDiv
+        {
+            position: absolute;
+            text-align: left;
+            width: auto;
+            word-wrap: break-word;
+            padding: 2px;
+            font: 12px sans-serif;
+            background: lightsteelblue;
+            border: 0px;
+            border-radius: 4px;
+            overflow-y: scroll;
+            height: 90%;
+        }
+
+
+form {
+  outline: 0;
+  display: inline-block;
+  -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+}
+
+form > .textbox {
+  outline: 0;
+  height: 25px;
+  width: 544px;
+  line-height: 42px;
+  padding: 0 16px;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #212121;
+  border: 0;
+  float: left;
+  font-family: 'Poppins';
+  -webkit-border-radius: 4px 0 0 4px;
+  border-radius: 4px 0 0 4px;
+}
+
+form > .textbox:focus {
+  outline: 0;
+  background-color: #FFF;
+}
+
+form > .button {
+  outline: 0;
+  background: none;
+  background-color: rgba(38, 50, 56, 0.8);
+  float: left;
+  height: 25px;
+  width: 55px;
+  text-align: center;
+  line-height: 42px;
+  border: 0;
+  color: #FFF;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-family: 'Poppins';
+  font-size: 12px;
+  text-rendering: auto;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  -webkit-transition: background-color .4s ease;
+  transition: background-color .4s ease;
+  -webkit-border-radius: 0 4px 4px 0;
+  border-radius: 0 4px 4px 0;
+
+}
+
+.title {
+font-family: 'Poppins';
+font: normal normal normal 14px/1 FontAwesome;
+border: 0;
+color: #333333;
+width: 200px;
+height: 10px;
+text-align: center;
+font-size:22px;
+}
+
+form > .tokenButton {
+  outline: 0;
+  background: none;
+  background-color: rgba(175, 175, 175, 0.8);
+  float: left;
+  height: 25px;
+  width: 55px;
+  text-align: center;
+  line-height: 42px;
+  border: 0;
+  color: #636363;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-family: 'Poppins';
+  font-size: 12px;
+  text-rendering: auto;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  -webkit-transition: background-color .4s ease;
+  transition: background-color .4s ease;
+  -webkit-border-radius:  4px 0 0 4px;
+  border-radius: 4px 0 0 4px;
+  text-overflow: ellipsis;
+
+}
+
+form > .button:hover {
+  background-color: rgba(194, 4, 48, 1);
+
+}
+form > .tokenButton:hover {
+  background-color: rgba(42, 79, 175, 1);
+  color: #FFF;
+
+}
+
+.example_c {
+color: #494949 !important;
+text-transform: uppercase;
+background: #ffffff;
+padding: 5px;
+border: 0.5px solid #494949 !important;
+border-radius: 6px;
+display: inline-block;
+}
+
+.example_c:hover {
+color: #ffffff !important;
+background: lightsteelblue;
+border-color: lightsteelblue; !important;
+transition: all 0.4s ease 0s;
+}
