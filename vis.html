@@ -6,6 +6,7 @@
     <script src="//d3js.org/d3.v3.min.js"></script>
     <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
     <link rel="stylesheet" type="text/css" href="global.css">
+    <link rel="stylesheet" type="text/css" href="searchBar.css">
 </head>
 <body>
 <div id="container">
@@ -28,8 +29,17 @@
             <input id="sendButton" value="Send" class="button">
         </form>
     </div>
-    <div class="title" style="position:absolute;top:23px;left:10px;">
+    <div class="title" style="position:absolute;top:23px;left:12px;">
         Datamart GraphMan
+    </div>
+    <div id="searchBar" style="position:absolute;top:75px;left:10px;width:200px;visibility: hidden;">
+        <div class="cntr">
+            <div class="cntr-innr">
+                <label class="search" for="inpt_search">
+                    <input id="inpt_search" type="text" />
+                </label>
+            </div>
+        </div>
     </div>
 
 </div>

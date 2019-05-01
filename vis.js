@@ -1,8 +1,9 @@
 //Attach listeners to rest input field and send button
 
  var sendURI = "";
- var token = "blabla";
+ var token = "token";
 
+    //ReST URL
     $("#sendButton").click(function(){
         sendURI = $('#sendValue').val();
         token = $('#tokenButton').val();
@@ -24,6 +25,7 @@
     $("#tokenButton").click(function () {
         $(this).select();
     });
+
 
 
 
@@ -63,16 +65,11 @@ function sendRest(getURL, token)
 ////////////////////////////////
 function loadGraph(response)
 {
-
-
-
-
         //before pushing to simulation, make copy of the JSON Graph so it can be shown to user
         //as json without the D3 simulation params added later on.
         jsonData = JSON.parse(JSON.stringify(response));
 
         update(response.graphs[0].edges, response.graphs[0].nodes,jsonData);
-
 
 }
 
@@ -81,7 +78,29 @@ function loadGraph(response)
 ////////////////////////////////
 ////////// Draw Data  //////////
 ////////////////////////////////
+
+
+
 function update(links, nodes, jsonData) {
+
+//add listener for search bar
+$("#inpt_search").on('focus', function () {
+    $(this).parent('label').addClass('active');
+});
+
+$("#inpt_search").on('blur', function () {
+    if($(this).val().length == 0)
+     {
+        $(this).parent('label').removeClass('active');
+        searchGraph("");
+     }
+});
+
+$("#inpt_search").on('keyup', function (e) {
+         if (e.keyCode == 13) {
+             searchGraph($(this).val());
+         }
+});
 
 ////// Global variables //////
 
@@ -127,10 +146,13 @@ function update(links, nodes, jsonData) {
     .attr("class", "gmlDiv")
     .style("opacity", 0);
 
-    // create Legend dynamically based on available node types.
 
+    //// create Legend dynamically based on available node types.
      var legend = {};
-     for(var i in nodes)
+     nodesWithDepth = 0;
+     depths = [];
+
+    for(var i in nodes)
     {
         if(legend.hasOwnProperty(nodes[i].type)) {
             legend[nodes[i].type].nodeCount += 1;
@@ -140,6 +162,16 @@ function update(links, nodes, jsonData) {
           legend[nodes[i].type] = {};
           legend[nodes[i].type].nodeCount = 1;
 
+         }
+
+         //check if node has metadata.depth property (used later to show(or not) the checkbox 'Force data-stream hierarchy''
+         if(checkNested(nodes[i],"metadata","depth")){
+
+             if(depths.indexOf(parseInt(nodes[i].metadata.depth)) === -1)
+               {
+                 depths.push(parseInt(nodes[i].metadata.depth));
+               }
+             nodesWithDepth++;
          }
 
     }
@@ -158,13 +190,15 @@ function update(links, nodes, jsonData) {
         k++;
      }
 
-    console.log(legend);
+
     ///////// Controls /////////////
 
+    //show buttons
     d3.select("#jsonButton").style("visibility","visible");
     d3.select("#gmlButton").style("visibility","visible");
+    d3.select("#searchBar").style("visibility","visible");
 
-    //buttons
+    //add listeners to buttons
     d3.select("#jsonButton")
     .on("click", function(){
         divGmlTooltip.html("").style("opacity", 0);
@@ -177,14 +211,14 @@ function update(links, nodes, jsonData) {
             divJsonTooltip.html("").style("opacity", 0);
     })
     .on("dblclick",function(){
-    var textToSave = JSON.stringify(jsonData, null, 1);
+        var textToSave = JSON.stringify(jsonData, null, 1);
 
-    var hiddenElement = document.createElement('a');
+        var hiddenElement = document.createElement('a');
 
-    hiddenElement.href = 'data:attachment/text,' + encodeURI(textToSave);
-    hiddenElement.target = '_blank';
-    hiddenElement.download = 'graph.json';
-    hiddenElement.click();
+        hiddenElement.href = 'data:attachment/text,' + encodeURI(textToSave);
+        hiddenElement.target = '_blank';
+        hiddenElement.download = 'graph.json';
+        hiddenElement.click();
     });
 
     d3.select("#gmlButton")
@@ -199,14 +233,14 @@ function update(links, nodes, jsonData) {
             divGmlTooltip.html("").style("opacity", 0);
     })
     .on("dblclick",function(){
-    var textToSave = convertToGML(jsonData);
+        var textToSave = convertToGML(jsonData);
 
-    var hiddenElement = document.createElement('a');
+        var hiddenElement = document.createElement('a');
 
-    hiddenElement.href = 'data:attachment/text,' + encodeURI(textToSave);
-    hiddenElement.target = '_blank';
-    hiddenElement.download = 'graph.gml';
-    hiddenElement.click();
+        hiddenElement.href = 'data:attachment/text,' + encodeURI(textToSave);
+        hiddenElement.target = '_blank';
+        hiddenElement.download = 'graph.gml';
+        hiddenElement.click();
     });
 
     //checkbox
@@ -306,43 +340,8 @@ function update(links, nodes, jsonData) {
 
 
 
-
-    //// count objects by type ////
-    var countPS = 0,
-        countBoE = 0,
-        countE = 0,
-        countLoD = 0,
-        countREPT = 0,
-        countDBFT = 0,
-        countNonMgRep = 0;
-        countDyn = 0;
-
-    nodesWithDepth = 0;
-    depths = [];
-    yForces = {};
-
-    for(var i in nodes)
-    {
-        if(nodes[i].type === "Processing script") { countPS++; legend[nodes[i].type].nodeCount = countPS; }
-        if(nodes[i].type === "Batch of extractions") { countBoE++; legend[nodes[i].type].nodeCount = countBoE; }
-        if(nodes[i].type === "Extraction") { countE++; legend[nodes[i].type].nodeCount = countE; }
-        if(nodes[i].type === "Datamart table") { countREPT++; legend[nodes[i].type].nodeCount = countREPT; }
-        if(nodes[i].type === "Label of data") { countLoD++; legend[nodes[i].type].nodeCount = countLoD; }
-        if(nodes[i].type === "Non-managed table") { countNonMgRep++; legend[nodes[i].type].nodeCount = countNonMgRep; }
-        if(nodes[i].type === "Dynamic table") { countDyn++; legend[nodes[i].type].nodeCount = countDyn; }
-
-        //check if node has metadata.depth property
-        if(checkNested(nodes[i],"metadata","depth")){
-
-            if(depths.indexOf(parseInt(nodes[i].metadata.depth)) === -1)
-              {
-                depths.push(parseInt(nodes[i].metadata.depth));
-              }
-            nodesWithDepth++;
-        }
-    }
-
     //check if all nodes have 'depth' property, if yes then show button and calculate yForces object
+    yForces = {};
     if(nodesWithDepth == nodes.length)
     {
         d3.select("#hcheckbox").style("visibility","visible");
@@ -372,7 +371,7 @@ function update(links, nodes, jsonData) {
             .enter().append("rect")
             .attr("id",function(d){ return 'legend-rect-' + d; })
             .attr("x",20)
-            .attr("y", function(d) { return factor*legend[d].Y+30; })
+            .attr("y", function(d) { return factor*legend[d].Y+70; })
             .attr("rx", "8")
             .attr("ry", "8")
             .attr("height", 30)
@@ -391,7 +390,7 @@ function update(links, nodes, jsonData) {
             .enter().append("text")
             .attr("id",function(d){ return 'legend-text-' +d; })
             .attr("x",25)
-            .attr("y", function(d) { return (factor*legend[d].Y)+50; })
+            .attr("y", function(d) { return (factor*legend[d].Y)+90; })
             .style("fill", "black")
             .text(function(d) { return d + ' ('+legend[d].nodeCount+')';})
             .on("click",function(d){
@@ -402,9 +401,9 @@ function update(links, nodes, jsonData) {
             });
 
 
-    //////////////////////////////
-    /////////// Links ////////////
-    //////////////////////////////
+//////////////////////////////
+/////////// Links ////////////
+//////////////////////////////
 
     //in order to be able to draw arcs between nodes that have multiple links,
     //we need to find those nodes and put a variables about the number of links
@@ -501,9 +500,9 @@ function update(links, nodes, jsonData) {
             .attr('pointer-events', 'visibleStroke');
 
 
-    //////////////////////////////
-    /////////// Nodes ////////////
-    //////////////////////////////
+//////////////////////////////
+/////////// Nodes ////////////
+//////////////////////////////
 
     //Add nodes and events on them
     node = svg.selectAll(".node")
@@ -654,6 +653,85 @@ function toggleOtherNodesVisibility(nodeType){
         otherNodes.transition().duration(500).style("opacity",0.21);
 
 }
+
+
+function searchGraph(searchPattern){
+//bugs
+// successive search is not working ex: Execute, then , BoE
+// the input text is not changing to red when no results
+
+
+node.transition()
+                .duration(200)
+                .style("stroke","none")
+                .style("stroke-width","0")
+                .style("opacity","1")
+
+link.transition()
+                .duration(200)
+                .style("stroke","#999")
+                .style("stroke-width","1")
+                .style("opacity","1")
+
+var cntFoundNodes = 0;
+var cntFoundLinks = 0;
+
+if(searchPattern != ""){
+
+    //highlight nodes
+    var foundNodes = d3.selectAll(".node").filter(function(d){
+                                                var string = JSON.stringify(d);
+                                                if(string.toLowerCase().indexOf(searchPattern.toLowerCase()) != -1) { cntFoundNodes++ ; return true; }
+                                            });
+    var otherNodes = d3.selectAll(".node").filter(function(d){
+                                                var string = JSON.stringify(d);
+                                                if(string.toLowerCase().indexOf(searchPattern.toLowerCase()) == -1) { return true; }
+                                            });
+
+    foundNodes.transition()
+                    .duration(200)
+                    .style("stroke","black")
+                    .style("stroke-width","1")
+    otherNodes.transition()
+                    .duration(200)
+                        .style("opacity","0.1")
+
+
+    //highlight links
+    var foundLinks = d3.selectAll(".edgepath").filter(function(d){
+                                                var string = JSON.stringify(d);
+                                                if(string.toLowerCase().indexOf(searchPattern.toLowerCase()) != -1) { cntFoundLinks++ ;  return true; }
+                                            });
+
+    var otherLinks = d3.selectAll(".edgepath").filter(function(d){
+                                                    var string = JSON.stringify(d);
+                                                    if(string.toLowerCase().indexOf(searchPattern.toLowerCase()) == -1) return true;
+                                                });
+
+
+    foundLinks.transition()
+                    .duration(200)
+                    .style("stroke","red")
+                    .style("stroke-width","1.5")
+    otherLinks.transition()
+                    .duration(200)
+                    .style("opacity","0.1")
+
+
+
+}
+console.log(cntFoundNodes+cntFoundLinks);
+if((cntFoundNodes+cntFoundLinks == 0))
+    {
+        d3.selectAll("#inpt_search").style("stroke","red");
+    }
+    else
+   {
+        d3.selectAll("#inpt_search").style("stroke","#333333");
+   }
+
+}
+
 
 function convertToGML(jsonData)
 {
