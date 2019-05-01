@@ -379,7 +379,7 @@ function update(links, nodes, jsonData) {
 
     var nbOfTypes = ObjectLength(legend);
 
-    var legendColor = d3.scale.linear().domain([1,nbOfTypes])
+    var legendColor = d3.scale.linear().domain([1,nbOfTypes+1]) //add 1 more color to avoid black if only 2 types exists
       .interpolate(d3.interpolateHcl)
       .range([d3.rgb("#007AFF"), d3.rgb('#FFF500')]);
 
@@ -391,6 +391,7 @@ function update(links, nodes, jsonData) {
         k++;
      }
 
+    console.log(legend);
     ///////// Controls /////////////
 
     d3.select("#jsonButton").style("visibility","visible");
@@ -399,6 +400,7 @@ function update(links, nodes, jsonData) {
     //buttons
     d3.select("#jsonButton")
     .on("click", function(){
+        divGmlTooltip.html("").style("opacity", 0);
         if(divJsonTooltip.style("opacity") == 0)
         {
             divJsonTooltip.html("<pre>" + JSON.stringify(jsonData, null, 1) + "</pre>")
@@ -420,6 +422,7 @@ function update(links, nodes, jsonData) {
 
     d3.select("#gmlButton")
     .on("click", function(){
+        divJsonTooltip.html("").style("opacity", 0);
         if(divGmlTooltip.style("opacity") == 0)
         {
             divGmlTooltip.html("<pre>" + convertToGML(jsonData) + "</pre>")
