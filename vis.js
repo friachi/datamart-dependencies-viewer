@@ -655,6 +655,18 @@ function toggleOtherNodesVisibility(nodeType){
         //dim all other nodes
         otherNodes.transition().duration(500).style("opacity",0.21);
 
+
+        //copy the labels of matching nodes to clipboard
+        var listOfNodesLabels = "List of nodes of type '"+ nodeType + "': \n";
+        nodes.forEach(function(d){
+         if(d.type === nodeType)
+         {
+            listOfNodesLabels += d.label + "\n";
+         }
+
+        });
+        copyToClipboard(listOfNodesLabels);
+
 }
 
 
@@ -844,6 +856,15 @@ gml += ']\n'; //end graph
 //console.log(gml);
 return gml
 
+}
+
+
+function copyToClipboard(value) {
+  var $temp = $("<textarea>");
+  $("body").append($temp);
+  $temp.val(value).select();
+  document.execCommand("copy"); //use cut to replace copy, this to avoid recursive call to .execCommand (which is prohibited in browsers to avoid attacks)
+  $temp.remove();
 }
 
 function tick(e) {

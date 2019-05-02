@@ -15,8 +15,8 @@ Features:
     - double-click a node to release its position
     - nodes are color coded following the object 'type' available
     - the legend shows the count of objects per type
-    - click on a legend to hide/show all of its nodes
-    - double click on a legend to hide all other nodes
+    - click on a legend to hide/show all of its corresponding nodes
+    - double click on a legend to hide all other nodes, this will also copy to clipboard the labels of all nodes that were double-clicked
     - 'Force data-stream hierarchy' uses the node.metadata.depth (if available) to position the nodes on screen top to bottom, such that data sources (ex: datamart, dbf tables) are on top, while batches or processing scripts are at the bottom.
 - Graph search functionality (full-text search on nodes and edges). It is possible to search only nodes by enclosing the search term with parenthesis (keyword), or search only edges by enclosing the search term with hyphens -keyword-
 - View the raw JSON graph response by clicking on '{ JSON }. double click to export to a file: graph.json
