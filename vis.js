@@ -93,6 +93,9 @@ $("#inpt_search").on('blur', function () {
      {
         $(this).parent('label').removeClass('active');
         searchGraph("");
+        d3.selectAll("#inpt_search").style("color","#333333");
+        d3.selectAll("#cntCircle").style("visibility","hidden")
+                                    .text("");
      }
 });
 
@@ -274,7 +277,7 @@ $("#inpt_search").on('keyup', function (e) {
             .attr("xoverflow","visible")
         .append('svg:path')
         .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
-        .attr('fill', '#999')
+        .attr('fill', '#d8d8d8')
         .style('stroke','none');
 
    svg.append('defs')
@@ -656,79 +659,113 @@ function toggleOtherNodesVisibility(nodeType){
 
 
 function searchGraph(searchPattern){
-//bugs
-// successive search is not working ex: Execute, then , BoE
-// the input text is not changing to red when no results
+//make all nodes and edges visible (i.e rest search in case there was a previous search active)
 
+node.style("stroke","none")
+    .style("stroke-width","0")
+    .style("opacity","1")
 
-node.transition()
-                .duration(200)
-                .style("stroke","none")
-                .style("stroke-width","0")
-                .style("opacity","1")
-
-link.transition()
-                .duration(200)
-                .style("stroke","#999")
-                .style("stroke-width","1")
-                .style("opacity","1")
+link.style("stroke","#999")
+    .style("stroke-width","1")
+    .style("stroke-opacity","0.6")
 
 var cntFoundNodes = 0;
 var cntFoundLinks = 0;
 
+var searchOnlyNodes = false;
+var searchOnlyEdges = false;
+
 if(searchPattern != ""){
 
-    //highlight nodes
-    var foundNodes = d3.selectAll(".node").filter(function(d){
-                                                var string = JSON.stringify(d);
-                                                if(string.toLowerCase().indexOf(searchPattern.toLowerCase()) != -1) { cntFoundNodes++ ; return true; }
-                                            });
-    var otherNodes = d3.selectAll(".node").filter(function(d){
-                                                var string = JSON.stringify(d);
-                                                if(string.toLowerCase().indexOf(searchPattern.toLowerCase()) == -1) { return true; }
-                                            });
+    if(searchPattern.trim().startsWith("(") && searchPattern.trim().endsWith(")"))
+    {
+        searchOnlyNodes = true;
+        link.transition()
+            .duration(200)
+            .style("stroke-opacity","0.01");
+    }
 
-    foundNodes.transition()
-                    .duration(200)
-                    .style("stroke","black")
-                    .style("stroke-width","1")
-    otherNodes.transition()
-                    .duration(200)
-                        .style("opacity","0.1")
+    if(searchPattern.trim().startsWith("-") && searchPattern.trim().endsWith("-"))
+    {
+        searchOnlyEdges = true;
+        node.transition()
+           .duration(200)
+           .style("opacity","0.1");
+    }
 
 
-    //highlight links
-    var foundLinks = d3.selectAll(".edgepath").filter(function(d){
-                                                var string = JSON.stringify(d);
-                                                if(string.toLowerCase().indexOf(searchPattern.toLowerCase()) != -1) { cntFoundLinks++ ;  return true; }
-                                            });
+        if(searchOnlyNodes === true || (searchOnlyNodes === false && searchOnlyEdges === false)){
 
-    var otherLinks = d3.selectAll(".edgepath").filter(function(d){
-                                                    var string = JSON.stringify(d);
-                                                    if(string.toLowerCase().indexOf(searchPattern.toLowerCase()) == -1) return true;
-                                                });
+            //highlight nodes
+            var foundNodes = d3.selectAll(".node").filter(function(d){
+                                                        var string = JSON.stringify(d);
+                                                        if(string.toLowerCase().indexOf(searchPattern.toLowerCase().trim().replace(/^\(+|\)+$/g, '')) != -1) {
+                                                            cntFoundNodes++ ;
+                                                            return true;
+                                                            }
+                                                    });
+            foundNodes.transition()
+                            .duration(200)
+                            .style("stroke","black")
+                            .style("stroke-width","1");
+
+            //dim all other nodes
+            var otherNodes = d3.selectAll(".node").filter(function(d){
+                                                        var string = JSON.stringify(d);
+                                                        if(string.toLowerCase().indexOf(searchPattern.toLowerCase().trim().replace(/^\(+|\)+$/g, '')) == -1) return true;
+                                                    });
+            otherNodes.transition()
+                           .duration(200)
+                           .style("opacity","0.1");
 
 
-    foundLinks.transition()
-                    .duration(200)
-                    .style("stroke","red")
-                    .style("stroke-width","1.5")
-    otherLinks.transition()
-                    .duration(200)
-                    .style("opacity","0.1")
+            }
+
+    if(searchOnlyEdges === true || (searchOnlyNodes === false && searchOnlyEdges === false)){
+            //highlight links
+            var foundLinks = d3.selectAll(".edgepath").filter(function(d){
+                                                        var string = JSON.stringify(d);
+                                                        if(string.toLowerCase().indexOf(searchPattern.toLowerCase().trim().replace(/^\-+|\-+$/g, '')) != -1) {
+                                                            cntFoundLinks++ ;
+                                                            return true;
+                                                            }
+                                                    });
+            foundLinks.transition()
+                            .duration(200)
+                            .style("stroke","red")
+                            .style("stroke-width","1.5");
+
+            //dim all other edges
+            var otherLinks = d3.selectAll(".edgepath").filter(function(d){
+                                                            var string = JSON.stringify(d);
+                                                            if(string.toLowerCase().indexOf(searchPattern.toLowerCase().trim().replace(/^\-+|\-+$/g, '')) == -1) return true;
+                                                        });
+            otherLinks.transition()
+                            .duration(200)
+                            .style("stroke-opacity","0.01");
+    }
 
 
+        if((cntFoundNodes+cntFoundLinks) == 0)
+            {
+                d3.selectAll("#inpt_search").style("color","red");
+            }
+            else
+           {
+                d3.selectAll("#inpt_search").style("color","#333333");
+           }
+
+//show count of matching nodes/edges
+d3.selectAll("#cntCircle").style("visibility","visible")
+                            .text(cntFoundNodes+cntFoundLinks);
 
 }
-console.log(cntFoundNodes+cntFoundLinks);
-if((cntFoundNodes+cntFoundLinks == 0))
-    {
-        d3.selectAll("#inpt_search").style("stroke","red");
-    }
-    else
-   {
-        d3.selectAll("#inpt_search").style("stroke","#333333");
-   }
+else
+{
+        d3.selectAll("#inpt_search").style("color","#333333");
+        d3.selectAll(".cntCircle").style("visibility","hidden");
+}
+
 
 }
 

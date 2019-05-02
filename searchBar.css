@@ -52,7 +52,19 @@
   box-sizing: border-box;
   font-family: Helvetica;
   font-size: 15px;
-  color: inherit;
+  color: #333333 ;
   background: transparent;
   outline-width: 0px;
+}
+
+.cntCircle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 11px;
+  color: red;
+  line-height: 20px;
+  text-align: center;
+  background: #FFF;
+  border: 2px solid #333333;
 }
